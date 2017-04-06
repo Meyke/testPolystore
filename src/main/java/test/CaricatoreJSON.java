@@ -20,11 +20,9 @@ public class CaricatoreJSON {
 	public void caricaJSON(List<String> listaFrom) throws FileNotFoundException{
 		File fileJSON = new File("/Users/micheletedesco1/Desktop/fileJSON.txt");
 		Scanner scanner = new Scanner(fileJSON);
-		//{'table' : 'persona', 'database' : 'postgerSQL', 'members':['persona.id', 'persona.nome', 'persona.scuola'] 'query' : 'SELECT * FROM persona WHERE 1=1'}
-		//{'table' : 'scuola', 'database' : 'mongoDB', 'members':['scuola.id', 'scuola.nome'] }
 		while (scanner.hasNextLine()) {
+			String line = scanner.nextLine();
 			for(String tabella : listaFrom){			
-				String line = scanner.nextLine();
 				JsonParser parser = new JsonParser();
 				JsonObject myJson = parser.parse(line).getAsJsonObject();
 				String table = myJson.get("table").getAsString();

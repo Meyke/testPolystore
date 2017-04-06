@@ -20,16 +20,19 @@ public class CaricatoreJSON {
 
 	public void caricaJSON() throws FileNotFoundException{//dovrei io passare la listafrom
 		List<String> listaFrom = new LinkedList<>(); 
-		listaFrom.add("persona");
+		//listaFrom.add("persona");
 		listaFrom.add("scuola");
+		listaFrom.add("indirizzo");
 
 		File fileJSON = new File("/Users/micheletedesco1/Desktop/fileJSON.txt");
 		Scanner scanner = new Scanner(fileJSON);
 		//{'table' : 'persona', 'database' : 'postgerSQL', 'members':['persona.id', 'persona.nome', 'persona.scuola'] 'query' : 'SELECT * FROM persona WHERE 1=1'}
 		//{'table' : 'scuola', 'database' : 'mongoDB', 'members':['scuola.id', 'scuola.nome'] }
+		//{'table' : 'indirizzo', 'database' : 'neo4j', 'knows' : 'nessuno', 'members':['indirizzo.id', 'indirizzo.nome'], 'query' : 'MATCH (indirizzo:indirizzo) WHERE 1=1' , 'foreignkey' : 'blebleble'}
 		while (scanner.hasNextLine()) {
+			String line = scanner.nextLine();
+			//System.out.println(line);
 			for(String tabella : listaFrom){			
-				String line = scanner.nextLine();
 				//System.out.println(line);
 				//System.out.println("------------------");
 				JsonParser parser = new JsonParser();
