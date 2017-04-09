@@ -55,7 +55,7 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 	}
 
 	private JsonArray eseguiQueryDirettamente(DBObject queryRiscritta) {
-		
+		    
 		  queryRiscritta.put("number", 5);
 		  DBCursor cursor = collection.find(queryRiscritta);
 		  JsonArray risultato = new JsonArray();
