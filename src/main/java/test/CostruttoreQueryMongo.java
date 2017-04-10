@@ -43,7 +43,7 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 				query.put(parametro, valore);
 			}
 			else{
-				richiestaJoin = true;
+				richiestaJoin = true; 
 				parametroJoin = condizione.get(0);
 				valueJoin = condizione.get(1);
 			}

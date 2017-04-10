@@ -49,7 +49,7 @@ public class MongoDao {
 		DBCollection dbCollection = db.getCollection(tableName);
 		DBCursor cur = dbCollection.find();
 		while(cur.hasNext()) {
-			System.out.println(cur.next());
+			System.out.println(cur.next()); 
 		}
 	}
 
