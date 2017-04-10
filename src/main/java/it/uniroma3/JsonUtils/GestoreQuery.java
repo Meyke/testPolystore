@@ -1,5 +1,11 @@
 package it.uniroma3.JsonUtils;
 
+
+import it.uniroma3.costruttore.CostruttoreQuery;
+import it.uniroma3.costruttore.CostruttoreQueryMongo;
+import it.uniroma3.costruttore.CostruttoreQueryNeo4j;
+import it.uniroma3.costruttore.CostruttoreQuerySQL;
+
 import java.util.List;
 import java.util.Map;
 
@@ -13,9 +19,9 @@ import com.google.gson.JsonObject;
  */
 public class GestoreQuery {
 	
-	public JsonArray esegui (JsonObject questoJson, JsonArray risQueryPrec, Map<String, JsonObject> jsonUtili, Map<String, List<List<String>>> mappaWhere){
+	public JsonArray esegui (JsonObject questoJson, JsonArray risQueryPrec, Map<String, JsonObject> jsonUtili, Map<String, List<List<String>>> mappaWhere) throws Exception{
 		JsonArray risultati = null;
-		JsonObject altroJson = jsonUtili.get(questoJson.get("Knows").getAsString());
+		JsonObject altroJson = jsonUtili.get(questoJson.get("knows").getAsString());
 		if (altroJson == null)
 			risultati = eseguiQuery(questoJson, null, mappaWhere);
 		else
@@ -23,64 +29,23 @@ public class GestoreQuery {
 		return risultati;
 				
 	}
-	//questo è un eseguiquerySQL. chiamarlo costruttoreQuerySql. Rivedere
-	private JsonArray eseguiQuery(JsonObject myJson,JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere){
-		boolean richiestaJoin = false;
-		String parametroJoin = null;
-		String valueJoin = null;
-		JsonArray risultato;
-		String tabella = myJson.get("table").getAsString();
-		List<List<String>> condizioniPerQuellaTabella = mappaWhere.get(tabella);
-		StringBuilder queryRiscritta = new StringBuilder();
-		queryRiscritta.append(myJson.get("query").getAsString());
-		
-		//adesso devo effettuare un controllo su ogni riga della matrice e poi costruire la query
-		for (int i=0; i<condizioniPerQuellaTabella.size();i++){ //potevo usare un for each
-			List<String> condizione = condizioniPerQuellaTabella.get(i);
-			//effettuo un controllo per vedere se quella è una riga di join o meno
-			if (!condizione.get(0).equals(myJson.get("foreignkey").getAsString())){ //da aggiungere<----------------
-				//se non è una condizione di join, la appendo direttamente alla query riscritta
-				String sottoStringa = " AND " + condizione.get(0) + " = " + condizione.get(1);
-				queryRiscritta.append(sottoStringa);
-			}
-			else{
-				//altrimenti è richiesto un join. Setto a true la variabile richiestaJoin. Generalizzare se più join 
-				richiestaJoin = true;
-				parametroJoin = condizione.get(0);
-				valueJoin = condizione.get(1);	
-			}
-			if (richiestaJoin)
-				risultato = effettuaJoin(queryRiscritta, risQueryPrec, parametroJoin, valueJoin);
-			else{
-				//eseguiqueryRiscritta passandola al client RPC di rabbitMQ. Mi deve ritornare un jsonArray
-			}
-			
-			
-		}		
-		return null;
-	}
 	
-	private JsonArray effettuaJoin(StringBuilder queryRiscritta, JsonArray risQueryPrec, String parametroJoin, String valueJoin){
-		JsonObject elementoRisultatoPrecedente;
-		StringBuilder queryTemporanea;
-		String sottoStringa;
-		//effettuo il join un risultato per volta
-		for (int i=0; i<risQueryPrec.size(); i++){
-			elementoRisultatoPrecedente = risQueryPrec.get(i); //dovrei ottenere un jsonObject
-			queryTemporanea = new StringBuilder().append(queryRiscritta);
-			sottoStringa = " AND " + parametroJoin + " = " + elemetoRisultatoPrecedente.get(value).toString();
-			queryTemporanea.append(sottoStringa);
-			//eseguo la stringa passandola al client rpc
-			//concateno i vari jsonArray
+	private JsonArray eseguiQuery(JsonObject myJson,JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere) throws Exception{
+		CostruttoreQuery costruttoreQuery = null;
+		if(myJson.get("database").getAsString().equals("postgreSQL"))
+			costruttoreQuery = new CostruttoreQuerySQL();
+		if(myJson.get("database").getAsString().equals("mongoDB"))
+			costruttoreQuery = new CostruttoreQueryMongo();
+		if(myJson.get("database").getAsString().equals("neo4j"))
+			costruttoreQuery = new CostruttoreQueryNeo4j();
+		return costruttoreQuery.eseguiQuery(myJson, risQueryPrec, mappaWhere);
+		
+		
+		
 		}
-		return null; //devo ritornare il jsonArray
-		
-		
-		
-		
-		
+			
 	}
-	
+
 	
 
-}
+

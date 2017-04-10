@@ -1,17 +1,21 @@
-package test;
+package it.uniroma3.costruttore;
 
-import java.sql.ResultSet;
+
+import it.uniroma3.JsonUtils.Convertitore;
+import it.uniroma3.persistence.GraphDao;
+
 import java.util.List;
 import java.util.Map;
+
+import org.neo4j.graphdb.Result;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-public class CostruttoreQuerySQL implements CostruttoreQuery{
-	
-	
-	//questo è un eseguiquerySQL. chiamarlo costruttoreQuerySql. Rivedere
-	public JsonArray eseguiQuery(JsonObject myJson,JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere) throws Exception{
+public class CostruttoreQueryNeo4j implements CostruttoreQuery {
+
+	@Override
+	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere) throws Exception {	
 		boolean richiestaJoin = false;
 		String parametroJoin = null;
 		String valueJoin = null;
@@ -46,8 +50,10 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 				valueJoin = condizione.get(1);	
 			}
 			if (richiestaJoin == true)
-				risultato = effettuaJoin(queryRiscritta, risQueryPrec, parametroJoin, valueJoin);
+				risultato = effettuaJoin(queryRiscritta, risQueryPrec, parametroJoin, valueJoin, tabella);
 			else{
+				queryRiscritta.append(" RETURN " + tabella +".id");//da parametrizzare con tutti i campi della tabella
+				System.out.println(queryRiscritta.toString());
 				risultato = eseguiQueryDirettamente(queryRiscritta);
 				System.out.println(risultato.toString());
 			}
@@ -57,8 +63,8 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 		return risultato;
 	}
 	
-	private JsonArray effettuaJoin(StringBuilder queryRiscritta, JsonArray risQueryPrec, String parametroJoin, String valueJoin) throws Exception{
-		RelationalDao dao = new RelationalDao();
+	private JsonArray effettuaJoin(StringBuilder queryRiscritta, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella) throws Exception{
+		GraphDao dao = new GraphDao();
 		JsonObject elementoRisultatoPrecedente;
 		StringBuilder queryTemporanea;
 		String sottoStringa;
@@ -66,16 +72,19 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 		//effettuo il join un risultato per volta
 		for (int i=0; i<risQueryPrec.size(); i++){
 			elementoRisultatoPrecedente = risQueryPrec.get(i).getAsJsonObject();//dovrei ottenere un jsonObject
+			System.out.println(elementoRisultatoPrecedente.toString());
 			queryTemporanea = new StringBuilder().append(queryRiscritta);
 			if(elementoRisultatoPrecedente.get(valueJoin)==null)
-				sottoStringa = " AND " + parametroJoin + " = " + elementoRisultatoPrecedente.get("id").getAsString(); //da parametrizzare solo con valuejoin. ATTENZIONE
+			    sottoStringa = " AND " + parametroJoin + " = " + elementoRisultatoPrecedente.get("id").getAsString() + " RETURN " + tabella +".id"; //da parametrizzare con tutti i campi, altrimenti restituisce Node[225] per esempio
 			else
-				sottoStringa = " AND " + parametroJoin + " = " + elementoRisultatoPrecedente.get(valueJoin).getAsString();
+				sottoStringa = " AND " + parametroJoin + " = " + elementoRisultatoPrecedente.get(valueJoin).getAsString() + " RETURN " + tabella +".id";
+			
 			queryTemporanea.append(sottoStringa);
-			//eseguo la stringa passandola al client rpc
+			
+			//eseguo la stringa passandola al client rpc---- da fare
 			System.out.println(queryTemporanea.toString());
-			ResultSet rigaRisultato = dao.interroga(queryTemporanea.toString());
-			JsonArray risultatiParziali = Convertitore.convertSQLToJSON(rigaRisultato);
+			Result rigaRisultato = dao.interroga(queryTemporanea.toString());
+			JsonArray risultatiParziali = Convertitore.convertCypherToJSON(rigaRisultato);
 			risultati = concatArray(risultati, risultatiParziali);
 			System.out.println(risultati.toString());
 			//concateno i vari jsonArray
@@ -97,10 +106,9 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 	}
 	
 	private JsonArray eseguiQueryDirettamente(StringBuilder queryRiscritta) throws Exception{
-		RelationalDao dao = new RelationalDao();
-		ResultSet risultatoResultSet = dao.interroga(queryRiscritta.toString());
-		JsonArray risultati = Convertitore.convertSQLToJSON(risultatoResultSet);
+		GraphDao dao = new GraphDao();
+		Result risultatoResult = dao.interroga(queryRiscritta.toString());
+		JsonArray risultati = Convertitore.convertCypherToJSON(risultatoResult);
 		return risultati;
 	}
-
 }

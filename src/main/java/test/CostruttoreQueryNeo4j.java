@@ -71,7 +71,11 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 			elementoRisultatoPrecedente = risQueryPrec.get(i).getAsJsonObject();//dovrei ottenere un jsonObject
 			System.out.println(elementoRisultatoPrecedente.toString());
 			queryTemporanea = new StringBuilder().append(queryRiscritta);
-			sottoStringa = " AND " + parametroJoin + " = " + elementoRisultatoPrecedente.get("id").getAsString() + " RETURN " + tabella +".id"; //da parametrizzare con tutti i campi, altrimenti restituisce Node[225] per esempio
+			if(elementoRisultatoPrecedente.get(valueJoin)==null)
+			    sottoStringa = " AND " + parametroJoin + " = " + elementoRisultatoPrecedente.get("id").getAsString() + " RETURN " + tabella +".id"; //da parametrizzare con tutti i campi, altrimenti restituisce Node[225] per esempio
+			else
+				sottoStringa = " AND " + parametroJoin + " = " + elementoRisultatoPrecedente.get(valueJoin).getAsString() + " RETURN " + tabella +".id";
+			
 			queryTemporanea.append(sottoStringa);
 			
 			//eseguo la stringa passandola al client rpc---- da fare

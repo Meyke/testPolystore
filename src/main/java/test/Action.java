@@ -39,7 +39,9 @@ public class Action {
 		*/
 		
 		//-------altro test
+		
 		String querySQL = "SELECT * FROM scuola, indirizzo WHERE scuola.id_indirizzo = indirizzo.id AND indirizzo.nome = 'brava'";
+		 
 
 		ParserSql parser = new ParserSql();
 		parser.spezza(querySQL);//spezzo la query
