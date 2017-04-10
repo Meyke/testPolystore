@@ -1,5 +1,6 @@
 package test;
 
+import java.net.UnknownHostException;
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,8 @@ import com.google.gson.JsonObject;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+
+import it.uniroma3.persistence.MongoDao;
 
 public class CostruttoreQueryMongo implements CostruttoreQuery {
 
@@ -54,25 +57,18 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 		return risultato;
 	}
 
-	private JsonArray eseguiQueryDirettamente(DBObject queryRiscritta) {
-		     
-		  queryRiscritta.put("number", 5);
-		  DBCursor cursor = collection.find(queryRiscritta);
+	private JsonArray eseguiQueryDirettamente(DBObject queryRiscritta) throws Exception { 
+		  MongoDao dao = new MongoDao();
+		  DBCursor cursor = dao.findByColumn("scuola", queryRiscritta);
 		  JsonArray risultato = new JsonArray();
 		  while (cursor.hasNext()) {
-// METODO ALTERNATIVO (usa JSONobject e non JsonObject)
-//			 //assign the cursor to the DbObject
-//			  DBObject result = cursor.next();
-//			  //this line will convert the DbObject to JSONObject
-//			  JsonObject output = new JSONObject(JSON.serialize(result));
-			  
 			  risultato.add(cursor.next().toString());
 			System.out.println(cursor.next());
 		  }
 		  return risultato;
 	}
 
-	private JsonArray effettuaJoin(DBObject query, JsonArray risQueryPrec, String parametroJoin, String valueJoin) {
+	private JsonArray effettuaJoin(DBObject query, JsonArray risQueryPrec, String parametroJoin, String valueJoin) throws Exception {
 		JsonObject elementoRisultatoPrecedente;
 		JsonArray risultati = new JsonArray();
 		
@@ -80,7 +76,10 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 			elementoRisultatoPrecedente = risQueryPrec.get(i).getAsJsonObject();
 			System.out.println(elementoRisultatoPrecedente.toString());
 			String valore = elementoRisultatoPrecedente.get(valueJoin).toString();
-			DBObject queryTemporanea = (DBObject) query;
+			
+			DBObject queryTemporanea = new BasicDBObject();
+			queryTemporanea.putAll(query);
+			
 			queryTemporanea.put(parametroJoin, valore);
 			System.out.println(queryTemporanea.toString());
 			JsonArray risultatiParziali = eseguiQueryDirettamente(queryTemporanea);
@@ -100,5 +99,4 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 		}
 		return result;
 	}
-
 }
