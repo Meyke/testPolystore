@@ -52,8 +52,10 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 				System.out.println(risultato.toString());
 			}
 			
-			
 		}		
+		if (condizioniPerQuellaTabella.size() == 0){
+			risultato = eseguiQueryDirettamente(queryRiscritta);
+		}
 		return risultato;
 	}
 	

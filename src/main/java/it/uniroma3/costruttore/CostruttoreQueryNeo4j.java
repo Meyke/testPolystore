@@ -52,14 +52,37 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 			if (richiestaJoin == true)
 				risultato = effettuaJoin(queryRiscritta, risQueryPrec, parametroJoin, valueJoin, tabella);
 			else{
-				queryRiscritta.append(" RETURN " + tabella +".id");//da parametrizzare con tutti i campi della tabella
+				StringBuilder membriReturn = new StringBuilder();
+				JsonArray membriTabella = myJson.getAsJsonArray("members");
+				for (int iterator=0; iterator<membriTabella.size(); iterator++){
+					String membro = membriTabella.get(iterator).getAsString();
+					if (iterator == membriTabella.size()-1){
+						membriReturn.append(membro);
+					}
+					else membriReturn.append(membro + ", ");
+				}
+				queryRiscritta.append(" RETURN " + membriReturn);// per ritornare tutti i campi della tabella neo4j
 				System.out.println(queryRiscritta.toString());
 				risultato = eseguiQueryDirettamente(queryRiscritta);
 				System.out.println(risultato.toString());
 			}
 			
 			
-		}		
+		}	
+		if (condizioniPerQuellaTabella.size() == 0){
+			StringBuilder membriReturn = new StringBuilder();
+			JsonArray membriTabella = myJson.getAsJsonArray("members");
+			for (int iterator=0; iterator<membriTabella.size(); iterator++){
+				String membro = membriTabella.get(iterator).getAsString();
+				if (iterator == membriTabella.size()-1){
+					membriReturn.append(membro);
+				}
+				else membriReturn.append(membro + ", ");
+			}
+			queryRiscritta.append(" RETURN " + membriReturn);// per ritornare tutti i campi della tabella neo4j
+			System.out.println(queryRiscritta);
+			risultato = eseguiQueryDirettamente(queryRiscritta);
+		}
 		return risultato;
 	}
 	

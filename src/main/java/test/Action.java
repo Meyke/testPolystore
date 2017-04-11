@@ -60,9 +60,26 @@ public class Action {
 		System.out.println(risultato.toString());
 
 		
+		/*
+		String querySQL = "SELECT * FROM indirizzo";
+		 
 
-
-
+		ParserSql parser = new ParserSql();
+		parser.spezza(querySQL);//spezzo la query
+		List<String> tabelle = parser.getTableList();//ottengo le tabelle che formano la query
+		List<List<String>> matriceWhere = parser.getMatriceWhere();
+		CaricatoreJSON caricatoreDAFile = new CaricatoreJSON();
+		caricatoreDAFile.caricaJSON(tabelle);//carico da file i json utili in base alle tabelle
+		Map<String, JsonObject> jsonUtili = caricatoreDAFile.getJsonCheMiServono();
+		JsonObject questoJson = jsonUtili.get("indirizzo");
+		FabbricatoreMappaStatement fabbricatoreCondizione = new FabbricatoreMappaStatement();
+		fabbricatoreCondizione.creaMappaWhere(matriceWhere, jsonUtili);
+		Map<String, List<List<String>>> mappaWhere = fabbricatoreCondizione.getMappaWhere();
+		System.out.println(mappaWhere.toString());
+		GestoreQuery gestoreQuerySql = new GestoreQuery();
+		JsonArray risultato = gestoreQuerySql.esegui(questoJson, null, jsonUtili, mappaWhere);
+		System.out.println(risultato.toString());
+		*/
 
 
 	}
