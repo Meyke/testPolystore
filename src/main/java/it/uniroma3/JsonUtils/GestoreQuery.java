@@ -1,10 +1,10 @@
 package it.uniroma3.JsonUtils;
 
 
-import it.uniroma3.costruttore.CostruttoreQuery;
-import it.uniroma3.costruttore.CostruttoreQueryMongo;
-import it.uniroma3.costruttore.CostruttoreQueryNeo4j;
-import it.uniroma3.costruttore.CostruttoreQuerySQL;
+import it.uniroma3.costruttoreQuery.CostruttoreQuery;
+import it.uniroma3.costruttoreQuery.CostruttoreQueryMongo;
+import it.uniroma3.costruttoreQuery.CostruttoreQueryNeo4j;
+import it.uniroma3.costruttoreQuery.CostruttoreQuerySQL;
 
 import java.util.List;
 import java.util.Map;
@@ -13,7 +13,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 /**
- * Questa classe ha lo scopo di eseguire la query per adesso solo SQL. poi la estendo a tutto il resto
+ * Questa classe esegue la query a catena navigando sui collegamenti (sui join).
  * @author micheletedesco1
  *
  */

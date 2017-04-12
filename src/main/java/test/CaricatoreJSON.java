@@ -12,7 +12,7 @@ import com.google.gson.JsonParser;
 //testato e funzionante attenzione alle virgolette, che cambiano nel file
 public class CaricatoreJSON {
 	private Map<String,JsonObject> jsonCheMiServono;
-
+	private String tabellaPrioritaAlta;
 	public CaricatoreJSON() {
 		this.jsonCheMiServono = new HashMap<>();
 	}
@@ -20,6 +20,7 @@ public class CaricatoreJSON {
 	public void caricaJSON(List<String> listaFrom) throws FileNotFoundException{
 		File fileJSON = new File("/Users/micheletedesco1/Desktop/fileJSON.txt");
 		Scanner scanner = new Scanner(fileJSON);
+		double maxPriority = 10000;
 		while (scanner.hasNextLine()) {
 			String line = scanner.nextLine();
 			for(String tabella : listaFrom){			
@@ -27,7 +28,11 @@ public class CaricatoreJSON {
 				JsonObject myJson = parser.parse(line).getAsJsonObject();
 				String table = myJson.get("table").getAsString();
 				if(table.equals(tabella)){
-					System.out.println(tabella);
+					double priority = myJson.get("priority").getAsDouble();
+					if (priority <= maxPriority){
+						maxPriority = priority;
+						this.tabellaPrioritaAlta = tabella;
+					}
 				    this.jsonCheMiServono.put(tabella, myJson);
 				}
 
@@ -46,6 +51,15 @@ public class CaricatoreJSON {
 		this.jsonCheMiServono = jsonCheMiServono;
 	}
 
+	public String getTabellaPrioritaAlta() {
+		return tabellaPrioritaAlta;
+	}
+
+	public void setTabellaPrioritaAlta(String tabellaPrioritaAlta) {
+		this.tabellaPrioritaAlta = tabellaPrioritaAlta;
+	}
+
+	
 	
 
 }

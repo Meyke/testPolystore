@@ -1,0 +1,9 @@
+it.uniroma3.JsonUtils
+it.uniroma3.JsonUtils.parser
+it.uniroma3.controller
+it.uniroma3.costruttoreQuery
+it.uniroma3.model
+it.uniroma3.persistence
+it.uniroma3.persistence.mongo
+it.uniroma3.persistence.neo4j
+it.uniroma3.persistence.postgres

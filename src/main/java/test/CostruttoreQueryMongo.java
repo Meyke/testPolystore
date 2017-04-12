@@ -11,7 +11,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 
-import it.uniroma3.persistence.MongoDao;
+import it.uniroma3.persistence.mongo.MongoDao;
 
 public class CostruttoreQueryMongo implements CostruttoreQuery {
 

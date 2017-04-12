@@ -11,7 +11,7 @@
           String queryCypher = request.getParameter("queryCypher");
           Boolean corretto = true;
 
-          if (querySQL.equals("") && queryMongoDB.equals("") && queryCypher.equals("") ) {
+          if (querySQL.equals("") && queryCypher.equals("") && queryMongoDB.equals("") ) {
               corretto = false;
               request.setAttribute("queryError", "almeno una query è richiesta");
 

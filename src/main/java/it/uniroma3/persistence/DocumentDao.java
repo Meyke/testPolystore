@@ -1,5 +1,7 @@
 package it.uniroma3.persistence;
 
+import it.uniroma3.persistence.mongo.DataSourceMongo;
+
 import java.net.UnknownHostException;
 import java.util.LinkedList;
 import java.util.List;
@@ -11,6 +13,7 @@ import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
+//da rivedere
 public class DocumentDao {
 	
 	private DataSourceMongo datasource;
