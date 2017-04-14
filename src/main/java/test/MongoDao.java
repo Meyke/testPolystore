@@ -1,4 +1,4 @@
-package it.uniroma3.persistence.mongo;
+package test;
 
 import java.net.UnknownHostException;
 import com.mongodb.DB;
