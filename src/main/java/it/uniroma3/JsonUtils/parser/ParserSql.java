@@ -12,12 +12,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 
-/**
- * Viene scansionata la query SQL e generate la collezione di tabelle da interrogare, la collezione delle proiezioni e
- * la collezione di condizioni
- * @author micheletedesco1
- *
- */
+
 public class ParserSql {
 	private List<String> tableList;
 	private List<String> listaProiezioni;
@@ -53,7 +48,11 @@ public class ParserSql {
     			String[] oggettiStatementSeparati = oggettiStatement[i].split("=");
     			List<String> rigaMatrice = new LinkedList<>();
     			rigaMatrice.add(oggettiStatementSeparati[0].replaceAll("\\s+","")); //st = st.replaceAll("\\s+","")
-    			rigaMatrice.add(oggettiStatementSeparati[1].replaceAll("\\s+",""));
+    			oggettiStatementSeparati[1] = oggettiStatementSeparati[1].replaceFirst("\\s+","");
+    			if (oggettiStatementSeparati[1].endsWith(" ")){
+    				oggettiStatementSeparati[1] = oggettiStatementSeparati[1].substring(0,oggettiStatementSeparati[1].length() - 1);
+    				}
+    			rigaMatrice.add(oggettiStatementSeparati[1]);
     			this.matriceWhere.add(rigaMatrice);			 		
     		} 
     	}
@@ -82,5 +81,12 @@ public class ParserSql {
 	public void setMatriceWhere(List<List<String>> matriceWhere) {
 		this.matriceWhere = matriceWhere;
 	}	
+	
+ 
+		/*String stringaSql =  "SELECT customer.last_Name " +
+                               "FROM customer , rental , inventory "+
+				               "WHERE customer.customer_ID=rental.customer_ID AND rental.inventory_ID=inventory.inventory_id AND inventory.film='Titanic'";
+		*/
+		
    
 }

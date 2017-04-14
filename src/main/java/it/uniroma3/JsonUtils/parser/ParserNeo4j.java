@@ -13,11 +13,10 @@ import com.google.gson.JsonParser;
 
 
 /**
- * Il parser per query cypher.
+ * è il parser per query cypher. Non riuscivo a trovarne uno decente per java
  *
  */
-
-//Non riuscivo a trovarne uno per java e me lo sono inventato
+//controllare i casi in cui manca la where e da aggiustare con spazi. vedi spezzatore query
 public class ParserNeo4j {
 	private List<String> listaProiezioni;
 	private List<String> tableList;
@@ -29,6 +28,8 @@ public class ParserNeo4j {
 		this.tableList = new LinkedList<>(); 
 		File fileJSON = new File("/Users/micheletedesco1/Desktop/fileJSON.txt");
 		Scanner scanner = new Scanner(fileJSON);
+		//{'table' : 'persona', 'database' : 'postgerSQL', 'members':['persona.id', 'persona.nome', 'persona.scuola'] 'query' : 'SELECT * FROM persona WHERE 1=1'}
+		//{'table' : 'scuola', 'database' : 'mongoDB', 'members':['scuola.id', 'scuola.nome'] }
 		while (scanner.hasNextLine()) {			
 			String line = scanner.nextLine();
 			JsonParser parser = new JsonParser();
@@ -39,35 +40,42 @@ public class ParserNeo4j {
 		}
 
 		scanner.close();
+		System.out.println(tableList.toString());
 		
-		//creo la listaDiCondizioni
+		//creo la listaWhere
 		this.matriceWhere = new LinkedList<>();
 		String[] parti = cypherQuery.split(" WHERE ");
-		String[] parti2 = null;
-		if(parti.length==1)
-			parti2 = parti[0].split(" RETURN ");
-		else 
-			parti2 = parti[1].split(" RETURN ");
+		String[] parti2 = parti[1].split(" RETURN ");
 		
-		String oggettoStringaWhere = null;
-		if(parti.length!=1){
-			oggettoStringaWhere = parti2[0];
-			String[] oggettiStatement = oggettoStringaWhere.split(" AND ");
-			for (int i=0; i<oggettiStatement.length; i++){
-				String[] oggettiStatementSeparati = oggettiStatement[i].split("=");
-				List<String> rigaMatrice = new LinkedList<>();
-				rigaMatrice.add(oggettiStatementSeparati[0]);
-				rigaMatrice.add(oggettiStatementSeparati[1]);
-				this.matriceWhere.add(rigaMatrice);			 		
-			} 	
-		}
-    	//creo la listaDiProiezioni
+		String oggettoStringaWhere = parti2[0];
+		String[] oggettiStatement = oggettoStringaWhere.split(" AND ");
+    	for (int i=0; i<oggettiStatement.length; i++){
+    		String[] oggettiStatementSeparati = oggettiStatement[i].split("=");
+    		List<String> rigaMatrice = new LinkedList<>();
+    		rigaMatrice.add(oggettiStatementSeparati[0].replaceAll("\\s+","")); //st = st.replaceAll("\\s+","")
+    		oggettiStatementSeparati[1] = oggettiStatementSeparati[1].replaceFirst("\\s+","");
+    		if (oggettiStatementSeparati[1].endsWith(" ")){
+				oggettiStatementSeparati[1] = oggettiStatementSeparati[1].substring(0,oggettiStatementSeparati[1].length() - 1);
+				}
+    		rigaMatrice.add(oggettiStatementSeparati[1]);
+    		this.matriceWhere.add(rigaMatrice);			 		
+    	} 	
+    	
+    	//creo la listaSelect
     	this.listaProiezioni = new LinkedList<>();
     	String oggettoStringaReturn = parti2[1];
         String[] partiReturn = oggettoStringaReturn.split("\\,");
         for (int i=0; i<partiReturn.length; i++){
         	this.listaProiezioni.add(partiReturn[i]);
-        }			
+        }
+        
+		
+		
+		
+		
+		
+		
+		
 	}
 
 	public List<String> getListaProiezioni() {
@@ -92,6 +100,15 @@ public class ParserNeo4j {
 
 	public void setMatriceWhere(List<List<String>> matriceWhere) {
 		this.matriceWhere = matriceWhere;
+	}
+	
+	public static void main(String[] args) throws FileNotFoundException, JSQLParserException {
+		String cypherQuery ="MATCH (persona:persona), (scuola:scuola) WHERE persona.scuola=scuola.id AND scuola.nome='caffe' RETURN persona.name";
+		ParserNeo4j parserNeo4j = new ParserNeo4j();
+		parserNeo4j.spezza(cypherQuery);
+		System.out.println("lista proiezioni----->" + parserNeo4j.getListaProiezioni().toString());
+		System.out.println("lista tabelle----->" + parserNeo4j.getTableList().toString());
+		System.out.println("lista clausule where [attributo valore]---->" + parserNeo4j.getMatriceWhere().toString());
 	}
 }
 

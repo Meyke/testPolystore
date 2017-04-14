@@ -48,7 +48,11 @@ public class ParserSql {
     			String[] oggettiStatementSeparati = oggettiStatement[i].split("=");
     			List<String> rigaMatrice = new LinkedList<>();
     			rigaMatrice.add(oggettiStatementSeparati[0].replaceAll("\\s+","")); //st = st.replaceAll("\\s+","")
-    			rigaMatrice.add(oggettiStatementSeparati[1].replaceAll("\\s+",""));
+    			oggettiStatementSeparati[1] = oggettiStatementSeparati[1].replaceFirst("\\s+","");
+    			if (oggettiStatementSeparati[1].endsWith(" ")){
+    				oggettiStatementSeparati[1] = oggettiStatementSeparati[1].substring(0,oggettiStatementSeparati[1].length() - 1);
+    				}
+    			rigaMatrice.add(oggettiStatementSeparati[1]);
     			this.matriceWhere.add(rigaMatrice);			 		
     		} 
     	}
