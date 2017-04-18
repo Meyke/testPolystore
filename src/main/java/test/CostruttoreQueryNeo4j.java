@@ -12,7 +12,7 @@ import com.google.gson.JsonObject;
 public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 
 	@Override
-	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere) throws Exception {	
+	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows) throws Exception {	
 		boolean richiestaJoin = false;
 		String parametroJoin = null;
 		String valueJoin = null;
@@ -33,8 +33,8 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 			//effettuo un controllo per vedere se quella è una riga di join o meno
 			
 			System.out.println(condizione.get(0));
-			System.out.println(myJson.get("foreignkey").getAsString());
-			if (!condizione.get(0).equals(myJson.get("foreignkey").getAsString())){ //da aggiungere<----------------
+			//System.out.println(myJson.get("foreignkey").getAsString());
+			if (!condizione.get(0).equals(tabellaKnows.get("foreignkey").getAsString())){ //da aggiungere<----------------
 				//se non è una condizione di join, la appendo direttamente alla query riscritta
 				String sottoStringa = " AND " + condizione.get(0) + " = " + condizione.get(1);
 				queryRiscritta.append(sottoStringa);
@@ -47,7 +47,7 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 				valueJoin = condizione.get(1);	
 			}
 			if (richiestaJoin == true)
-				risultato = effettuaJoin(queryRiscritta, risQueryPrec, parametroJoin, valueJoin, tabella);
+				risultato = effettuaJoin(queryRiscritta, risQueryPrec, parametroJoin, valueJoin, tabella, myJson);
 			else{
 				StringBuilder membriReturn = new StringBuilder();
 				JsonArray membriTabella = myJson.getAsJsonArray("members");
@@ -83,7 +83,7 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 		return risultato;
 	}
 	
-	private JsonArray effettuaJoin(StringBuilder queryRiscritta, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella) throws Exception{
+	private JsonArray effettuaJoin(StringBuilder queryRiscritta, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella, JsonObject myJson) throws Exception{
 		GraphDao dao = new GraphDao();
 		JsonObject elementoRisultatoPrecedente;
 		StringBuilder queryTemporanea;
@@ -94,10 +94,22 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 			elementoRisultatoPrecedente = risQueryPrec.get(i).getAsJsonObject();//dovrei ottenere un jsonObject
 			System.out.println(elementoRisultatoPrecedente.toString());
 			queryTemporanea = new StringBuilder().append(queryRiscritta);
-			if(elementoRisultatoPrecedente.get(valueJoin)==null)
-			    sottoStringa = " AND " + parametroJoin + " = " + elementoRisultatoPrecedente.get("id").getAsString() + " RETURN " + tabella +".id"; //da parametrizzare con tutti i campi, altrimenti restituisce Node[225] per esempio
+			StringBuilder membriReturn = new StringBuilder();
+			//per ritornare tutti i membri (colonne) di quella tabella
+			JsonArray membriTabella = myJson.getAsJsonArray("members");
+			for (int iterator=0; iterator<membriTabella.size(); iterator++){
+				String membro = membriTabella.get(iterator).getAsString();
+				if (iterator == membriTabella.size()-1){
+					membriReturn.append(membro);
+				}
+				else membriReturn.append(membro + ", ");
+			}
+			if(elementoRisultatoPrecedente.get(valueJoin)==null){
+				String id =valueJoin.split("\\.")[1];
+			    sottoStringa = " AND " + parametroJoin + " = " + elementoRisultatoPrecedente.get(id).getAsString() + " RETURN " + membriReturn; //da parametrizzato, altrimenti dava Node[225] per esempio
+			}
 			else
-				sottoStringa = " AND " + parametroJoin + " = " + elementoRisultatoPrecedente.get(valueJoin).getAsString() + " RETURN " + tabella +".id";
+				sottoStringa = " AND " + parametroJoin + " = " + elementoRisultatoPrecedente.get(valueJoin).getAsString() + " RETURN " + membriReturn;
 			
 			queryTemporanea.append(sottoStringa);
 			

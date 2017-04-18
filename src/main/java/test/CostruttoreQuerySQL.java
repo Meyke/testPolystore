@@ -11,7 +11,7 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 	
 	
 	//questo è un eseguiquerySQL. chiamarlo costruttoreQuerySql. Rivedere
-	public JsonArray eseguiQuery(JsonObject myJson,JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere) throws Exception{
+	public JsonArray eseguiQuery(JsonObject myJson,JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows) throws Exception{
 		boolean richiestaJoin = false;
 		String parametroJoin = null;
 		String valueJoin = null;
@@ -32,8 +32,8 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 			//effettuo un controllo per vedere se quella è una riga di join o meno
 			
 			System.out.println(condizione.get(0));
-			System.out.println(myJson.get("foreignkey").getAsString());
-			if (!condizione.get(0).equals(myJson.get("foreignkey").getAsString())){ //da aggiungere<----------------
+			//System.out.println(tabellaKnows.get("foreignkey").getAsString());
+			if (!condizione.get(0).equals(tabellaKnows.get("foreignkey").getAsString())){ //da aggiungere<----------------
 				//se non è una condizione di join, la appendo direttamente alla query riscritta
 				String sottoStringa = " AND " + condizione.get(0) + " = " + condizione.get(1);
 				queryRiscritta.append(sottoStringa);
@@ -65,12 +65,15 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 		StringBuilder queryTemporanea;
 		String sottoStringa;
 		JsonArray risultati = new JsonArray();
+		System.out.println("valore join" + valueJoin);
 		//effettuo il join un risultato per volta
 		for (int i=0; i<risQueryPrec.size(); i++){
 			elementoRisultatoPrecedente = risQueryPrec.get(i).getAsJsonObject();//dovrei ottenere un jsonObject
 			queryTemporanea = new StringBuilder().append(queryRiscritta);
-			if(elementoRisultatoPrecedente.get(valueJoin)==null)
-				sottoStringa = " AND " + parametroJoin + " = " + elementoRisultatoPrecedente.get("id").getAsString(); //da parametrizzare solo con valuejoin. ATTENZIONE
+			if(elementoRisultatoPrecedente.get(valueJoin)==null){
+				String id =valueJoin.split("\\.")[1];
+				sottoStringa = " AND " + parametroJoin + " = " + elementoRisultatoPrecedente.get(id).getAsString(); //da parametrizzare solo con valuejoin o primary key del join. ATTENZIONE
+			}
 			else
 				sottoStringa = " AND " + parametroJoin + " = " + elementoRisultatoPrecedente.get(valueJoin).getAsString();
 			queryTemporanea.append(sottoStringa);

@@ -7,6 +7,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 public interface CostruttoreQuery {
-	public JsonArray eseguiQuery(JsonObject myJson,JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere) throws Exception;
+	public JsonArray eseguiQuery(JsonObject myJson,JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows) throws Exception;
 
 }

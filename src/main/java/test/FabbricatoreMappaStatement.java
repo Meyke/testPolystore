@@ -37,8 +37,9 @@ public class FabbricatoreMappaStatement {
 			for(int i=0; i<attributi.size(); i++){
 				String attributo = attributi.get(i).getAsString();	
 				for(List<String> rigaMatriceWhere : matriceWhere){
-					if (attributo.equals(rigaMatriceWhere.get(0)))
+					if (attributo.equals(rigaMatriceWhere.get(0))){
 						matriceWherePreciso.add(rigaMatriceWhere);
+					}
 				}
 			}
 			mappaWhere.put(s, matriceWherePreciso);

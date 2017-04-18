@@ -10,11 +10,11 @@ import com.google.gson.JsonParser;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
-
+// ricordarsi di aprire il server ./mongod
 public class CostruttoreQueryMongo implements CostruttoreQuery {
 
 	@Override
-	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere) throws Exception {
+	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows) throws Exception {
 		boolean richiestaJoin = false;
 		String parametroJoin = null;
 		String valueJoin = null;
@@ -32,9 +32,8 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 			List<String> condizione = condizioniPerQuellaTabella.get(i);
 			
 			System.out.println(condizione.get(0));
-			System.out.println(myJson.get("foreignkey").getAsString());
 			//effettuo un controllo per vedere se quella è una riga di join o meno
-			if(!condizione.get(0).equals(myJson.get("foreignkey").getAsString())){
+			if(!condizione.get(0).equals(tabellaKnows.get("foreignkey").getAsString())){
 				String parametro = condizione.get(0).replace(tabella+".", "");
 				System.out.println("parametro: "+ parametro);
 				String valore= condizione.get(1).replaceAll("'", "");

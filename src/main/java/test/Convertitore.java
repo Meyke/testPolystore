@@ -7,7 +7,7 @@ import org.neo4j.graphdb.Result;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
+//la tabella non deve avere celle vuote
 public class Convertitore {
 
 	public static JsonArray convertSQLToJSON(ResultSet resultSet) throws Exception {
@@ -17,6 +17,7 @@ public class Convertitore {
 			JsonObject obj = new JsonObject();
 			for (int i = 0; i < total_rows; i++) {
 				obj.addProperty(resultSet.getMetaData().getColumnLabel(i + 1).toLowerCase(), resultSet.getObject(i + 1).toString());
+			    //System.out.println
 			}
 			jsonArray.add(obj);
 		}
