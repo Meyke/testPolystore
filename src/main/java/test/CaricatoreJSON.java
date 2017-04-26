@@ -3,12 +3,10 @@ package test;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -50,9 +48,14 @@ public class CaricatoreJSON {
 //svolto cosi per risolvere dei bug
 	public List<String> getTabellaPrioritaAlta(List<String> tabelle, Map<String, JsonObject> jsonUtili) {
 		//String tabellaPreferita = tabelle.get(0);
+		System.out.println(tabelle);
 		if (tabelle.size()==1)
 			return tabelle;
 		List<String> tabellePreferite = new LinkedList<>();
+		if (allEquals(tabelle) == true){
+			tabellePreferite.add(tabelle.get(0));		
+		}
+			
 		//tabellePreferite.add(tabellaPreferita);
 		for(int i=0; i<tabelle.size();i++){
 			JsonObject oggetto = jsonUtili.get(tabelle.get(i)); //es customer
@@ -70,6 +73,15 @@ public class CaricatoreJSON {
 		}	
 		System.out.println(tabellePreferite);
 		return tabellePreferite;
+	}
+
+	private boolean allEquals(List<String> tabelle) {
+		boolean allEqual = true;
+		for (String s : tabelle) {
+		    if(!s.equals(tabelle.get(0)))
+		        allEqual = false;
+		}
+		return allEqual;
 	}
 	
 

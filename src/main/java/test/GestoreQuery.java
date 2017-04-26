@@ -1,6 +1,7 @@
 package test;
 
 
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -13,16 +14,47 @@ import com.google.gson.JsonObject;
  *
  */
 public class GestoreQuery {
-	
+	//se conosce tanti ---> esegui in parallelo, altrimenti in cascata
 	public JsonArray esegui (JsonObject questoJson, JsonArray risQueryPrec, Map<String, JsonObject> jsonUtili, Map<String, List<List<String>>> mappaWhere) throws Exception{
-		JsonArray risultati = null;
+		int contatore = 1;
+		List<String> tabelleDaEseguirePerPrima = new LinkedList<>();
 		JsonArray entitaCheConosce = questoJson.get("knows").getAsJsonArray();
-		System.out.println("entita che conosce " + entitaCheConosce.size());
+		for (int i=0; i<entitaCheConosce.size(); i++){
+			if (mappaWhere.get(entitaCheConosce.get(i).getAsJsonObject().get("table").getAsString()) != null) {  //confrontare anche se coincidono la fk di questo json con quello contenuto in mappawhere
+				contatore ++;
+				tabelleDaEseguirePerPrima.add(entitaCheConosce.get(i).getAsJsonObject().get("table").getAsString());
+			}
+		}
+		if (contatore == 1)
+			return eseguiInCascata (questoJson, risQueryPrec, jsonUtili, mappaWhere);
+		else 
+			return eseguiInParallelo (questoJson, risQueryPrec, jsonUtili, mappaWhere, tabelleDaEseguirePerPrima);
+	}
+	
+	
+	private JsonArray eseguiInParallelo(JsonObject questoJson, JsonArray risQueryPrec, Map<String, JsonObject> jsonUtili, Map<String, List<List<String>>> mappaWhere, List<String> tabelleDaEseguirePerPrima) throws Exception {
+		//da fare
+		for (String tabellaDaEseguire : tabelleDaEseguirePerPrima){
+			JsonObject tabellaInJson = jsonUtili.get(tabellaDaEseguire);
+			jsonUtili.remove(tabellaDaEseguire);
+			JsonArray risultatoParziale = esegui(tabellaInJson, risQueryPrec, jsonUtili,mappaWhere);
+			System.out.println(risultatoParziale.toString());
+			//aggiungo i risultati parziali in una lista
+			//....da finire. Da creare nei costruttoriQuery un metodo che effettui join paralleli
+		}
+		
+//infine eseguo in cascata la prima tabella padre (cioè questoJson) mettendo i risQueryPrec in modo buono
+		
+		return null;
+	}
+	public JsonArray eseguiInCascata (JsonObject questoJson, JsonArray risQueryPrec, Map<String, JsonObject> jsonUtili, Map<String, List<List<String>>> mappaWhere) throws Exception{
+		JsonArray risultati = null;
+		jsonUtili.remove(questoJson.get("table").getAsString());//per evitare cicli di tabelle
+		JsonArray entitaCheConosce = questoJson.get("knows").getAsJsonArray();
 		for (int i =0; i<entitaCheConosce.size();i++){
 			JsonObject tabellaKnows = entitaCheConosce.get(i).getAsJsonObject();
-			System.out.println("tabellaKnows: " + tabellaKnows.toString());
 			JsonObject altroJson = jsonUtili.get(tabellaKnows.get("table").getAsString());
-			if (altroJson == null && i==entitaCheConosce.size()-1 && risultati==null) 
+			if (altroJson == null && i==entitaCheConosce.size()-1 && risultati==null)  //and mappawhere contiene la fk di questo json
 				risultati = eseguiQuery(questoJson, null, mappaWhere, tabellaKnows);
 			else  if(altroJson != null)
 				risultati = eseguiQuery(questoJson, esegui(altroJson, risQueryPrec, jsonUtili, mappaWhere), mappaWhere, tabellaKnows);
