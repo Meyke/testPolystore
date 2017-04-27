@@ -20,7 +20,7 @@ public class ClientNeo4jForPostgres {
 	private Connection connection;
     private Channel channel;
     private String requestQueueName;
-    private String replyQueueName = "CODA_RICEZIONE_NEO4J_DA_POSTGRES";
+    private String replyQueueName = "CODA_RICEZIONE_NEO4J";
 	private QueueingConsumer consumer;
 	
 	
@@ -40,8 +40,9 @@ public class ClientNeo4jForPostgres {
 		String response = null;
 		String corrId = java.util.UUID.randomUUID().toString();
 	    AMQP.BasicProperties props = new AMQP.BasicProperties.Builder().correlationId(corrId).replyTo(replyQueueName).build();
+	    messaggioJson.addProperty("codaRisposta", "CODA_RICEZIONE_NEO4J");
 	    String message = messaggioJson.toString();
-	    this.requestQueueName = "CODA_RICHIESTA_POSTGRES_DA_NEO4J" ;
+	    this.requestQueueName = "CODA_RICHIESTA_POSTGRES" ;
 		channel.basicPublish("", this.requestQueueName, props, message.getBytes("UTF-8"));
 		
 		//gestione del ritorno del risultato delle query

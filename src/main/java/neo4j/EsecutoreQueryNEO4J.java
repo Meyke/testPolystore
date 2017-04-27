@@ -8,7 +8,11 @@ import java.util.Map;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
+/**
+ * è un mini workflowmanager
+ * @author micheletedesco1
+ *
+ */
 public class EsecutoreQueryNEO4J {
 	public JsonArray esegui (JsonObject questoJson, JsonArray risQueryPrec, Map<String, JsonObject> jsonUtili, Map<String, List<List<String>>> mappaWhere) throws Exception{
 		JsonArray risultati = new JsonArray();

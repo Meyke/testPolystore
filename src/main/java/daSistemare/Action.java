@@ -39,8 +39,8 @@ public class Action {
 		//String querySQL = "SELECT * FROM customer, store WHERE customer.store_id = store.store_id AND store.manager_staff_id = 4"; //OK
 		//String querySQL = "SELECT * FROM rental, inventory WHERE rental.inventory_id = inventory.inventory_id AND inventory.inventory_id = 1"; //OK
 		//String querySQL = "SELECT * FROM store, staff WHERE store.manager_staff_id = staff.staff_id AND staff.last_name = 'Giannini'"; //NOooo. Non funge con collegamenti bidirezionali (bug da risolvere)
-		//String querySQL = "SELECT * FROM payment, staff WHERE payment.staff_id = staff.staff_id AND staff.last_name = 'Giannini'"; //OK
-		String querySQL = "SELECT * FROM store, address WHERE store.address_id = address.address_id AND address.address = 'via sala'";//OK
+		String querySQL = "SELECT * FROM payment, staff WHERE payment.staff_id = staff.staff_id AND staff.last_name = 'Giannini'"; //OK
+		//String querySQL = "SELECT * FROM store, address WHERE store.address_id = address.address_id AND address.address = 'via sala'";//OK
 		//String querySQL = "SELECT * FROM store, staff WHERE staff.store_id = store.store_id AND store.manager_staff_id = 4"; //OK
 		//String querySQL = "SELECT * FROM customer, store, address WHERE customer.store_id = store.store_id AND store.address_id = address.address_id AND address.address_id = 1"; //OK ma bug perchè customer e store conoscono entrambi address. Da risolvere se si conoscono tabelle in comune
 		

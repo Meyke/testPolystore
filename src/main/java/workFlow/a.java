@@ -39,6 +39,9 @@ public class a {
 		messaggioJson.add("risQueryPrec", risQueryPrec);
 		JsonArray jsonArray = messaggioJson.get("risQueryPrec").getAsJsonArray();
 		System.out.println(jsonArray.size());
+		messaggioJson.addProperty("codaRisposta", "CODA_RICEZIONE_WORKFLOW");
+		String codaRisposta = messaggioJson.get("codaRisposta").getAsString();
+		System.out.println("coda risposta: " + codaRisposta);
 	}
 
 }

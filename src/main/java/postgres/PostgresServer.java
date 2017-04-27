@@ -5,9 +5,6 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-
-
-
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -20,9 +17,9 @@ import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.AMQP.BasicProperties;
 
 @SuppressWarnings("deprecation")
-public class PostgresServerForNeo4j {
-private final static String RPC_QUEUE_NAME = "CODA_RICHIESTA_POSTGRES_DA_NEO4J";
-	
+public class PostgresServer {
+private final static String RPC_QUEUE_NAME = "CODA_RICHIESTA_POSTGRES";
+private String CODA_RISPOSTA;	
 	public String elaboraRisposta(String message) throws Exception{
 		//il messaggio è in formato stringa e lo devo convertire in json
 		Gson gson = new Gson();
@@ -30,14 +27,17 @@ private final static String RPC_QUEUE_NAME = "CODA_RICHIESTA_POSTGRES_DA_NEO4J";
 		JsonObject messaggioJson = parser.parse(message).getAsJsonObject();
 		JsonObject questoJson = messaggioJson.get("questoJson").getAsJsonObject();
 		JsonArray risQueryPrec= messaggioJson.get("risQueryPrec").getAsJsonArray();
+		String codaRisposta = messaggioJson.get("codaRisposta").getAsString();
+		System.out.println("coda risposta: " + codaRisposta);
 		String mappaWhereDaRiconvertire = messaggioJson.get("mappaWhere").getAsString();
 		Type listType = new TypeToken<Map<String, List<List<String>>>>() {}.getType();
 		Map<String, List<List<String>>> mappaWhere = gson.fromJson(mappaWhereDaRiconvertire, listType);
 		String jsonUtiliDaRiconvertire = messaggioJson.get("jsonUtili").getAsString();
 		listType = new TypeToken<Map<String, JsonObject>>() {}.getType();
-		Map<String, JsonObject> jsonUtili = gson.fromJson(jsonUtiliDaRiconvertire, listType);
+		Map<String, JsonObject> jsonUtili = gson.fromJson(jsonUtiliDaRiconvertire, listType);				
 		JsonArray risultati = new EsecutoreQuerySQL().esegui(questoJson, risQueryPrec, jsonUtili, mappaWhere);
 		
+		this.CODA_RISPOSTA = codaRisposta;
 		return risultati.toString();
 	}
 
@@ -62,11 +62,13 @@ private final static String RPC_QUEUE_NAME = "CODA_RICHIESTA_POSTGRES_DA_NEO4J";
 	    	BasicProperties props = delivery.getProperties();
 	    	BasicProperties replyProps =new BasicProperties.Builder().correlationId(props.getCorrelationId()).build();
 	    	String message = new String(delivery.getBody(),"UTF-8");
-	    	String response = new PostgresServerForNeo4j().elaboraRisposta(message);
+	    	PostgresServer postgresServer = new PostgresServer();
+	    	String response = postgresServer.elaboraRisposta(message);
 	    	System.out.println(" [x] Received ':'" + message + "'" + response ); 
-	    	String replyToQueue = props.getReplyTo();
+	    	
+	    	String replyToQueue = postgresServer.getCODA_RISPOSTA();
 	    	System.out.println("Publishing to : " + replyToQueue);
-	    	channel.basicPublish("", replyToQueue, replyProps, response.getBytes("UTF-8")); //meglio mettere una vera coda di risposta
+	    	channel.basicPublish("", replyToQueue, replyProps, response.getBytes("UTF-8")); 
 	    	channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 	    	}
 	    }
@@ -85,4 +87,8 @@ private final static String RPC_QUEUE_NAME = "CODA_RICHIESTA_POSTGRES_DA_NEO4J";
         }
 	}
 
+	public String getCODA_RISPOSTA() {
+		return CODA_RISPOSTA;
+	}
+	
 }

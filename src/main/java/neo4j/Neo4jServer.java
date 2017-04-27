@@ -5,6 +5,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -17,9 +18,9 @@ import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.AMQP.BasicProperties;
 
 @SuppressWarnings("deprecation")
-public class Neo4jServerForWorkFlow {
-private final static String RPC_QUEUE_NAME = "CODA_RICHIESTA_NEO4J_DA_WF";
-	
+public class Neo4jServer {
+private final static String RPC_QUEUE_NAME = "CODA_RICHIESTA_NEO4J";
+private String CODA_RISPOSTA;
 	public String elaboraRisposta(String message) throws Exception{
 		//il messaggio è in formato stringa e lo devo convertire in json
 		Gson gson = new Gson();
@@ -27,16 +28,17 @@ private final static String RPC_QUEUE_NAME = "CODA_RICHIESTA_NEO4J_DA_WF";
 		JsonObject messaggioJson = parser.parse(message).getAsJsonObject();
 		JsonObject questoJson = messaggioJson.get("questoJson").getAsJsonObject();
 		JsonArray risQueryPrec= messaggioJson.get("risQueryPrec").getAsJsonArray();
+		String codaRisposta = messaggioJson.get("codaRisposta").getAsString();
+		System.out.println("coda risposta: " + codaRisposta);
 		String mappaWhereDaRiconvertire = messaggioJson.get("mappaWhere").getAsString();
 		Type listType = new TypeToken<Map<String, List<List<String>>>>() {}.getType();
 		Map<String, List<List<String>>> mappaWhere = gson.fromJson(mappaWhereDaRiconvertire, listType);
 		String jsonUtiliDaRiconvertire = messaggioJson.get("jsonUtili").getAsString();
 		listType = new TypeToken<Map<String, JsonObject>>() {}.getType();
 		Map<String, JsonObject> jsonUtili = gson.fromJson(jsonUtiliDaRiconvertire, listType);
-		
-		
 		JsonArray risultati = new EsecutoreQueryNEO4J().esegui(questoJson, risQueryPrec, jsonUtili, mappaWhere);
 		
+		this.CODA_RISPOSTA = codaRisposta;
 		return risultati.toString();
 	}
 
@@ -49,8 +51,8 @@ private final static String RPC_QUEUE_NAME = "CODA_RICHIESTA_NEO4J_DA_WF";
 		factory.setPort(5672);
 		connection = factory.newConnection();
 		channel = connection.createChannel();
-//aspetto e poi prelevo i messaggi dalla queue CODA_RICHIESTA_NEO4J
-		channel.queueDeclare(RPC_QUEUE_NAME, false, false, false, null); 
+
+		channel.queueDeclare(RPC_QUEUE_NAME, false, false, false, null);
 		System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
 		
 		
@@ -61,13 +63,13 @@ private final static String RPC_QUEUE_NAME = "CODA_RICHIESTA_NEO4J_DA_WF";
 	    	BasicProperties props = delivery.getProperties();
 	    	BasicProperties replyProps =new BasicProperties.Builder().correlationId(props.getCorrelationId()).build();
 	    	String message = new String(delivery.getBody(),"UTF-8");
-	    	
-	    	String response = new Neo4jServerForWorkFlow().elaboraRisposta(message);
-	    	
+	    	Neo4jServer neo4jServer = new Neo4jServer();
+	    	String response = neo4jServer.elaboraRisposta(message);
 	    	System.out.println(" [x] Received ':'" + message + "'" + response ); 
-	    	String replyToQueue = props.getReplyTo();
-	    	System.out.println("Publishing to : " + replyToQueue); //invio il risultato alla coda di risposta (CODA_RICEZIONE_WORKFLOW)
-	    	channel.basicPublish("", replyToQueue, replyProps, response.getBytes("UTF-8"));
+	    	
+	    	String replyToQueue = neo4jServer.getCODA_RISPOSTA();
+	    	System.out.println("Publishing to : " + replyToQueue);
+	    	channel.basicPublish("", replyToQueue, replyProps, response.getBytes("UTF-8")); 
 	    	channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
 	    	}
 	    }
@@ -85,8 +87,10 @@ private final static String RPC_QUEUE_NAME = "CODA_RICHIESTA_NEO4J_DA_WF";
             }
         }
 	}
+
+	public String getCODA_RISPOSTA() {
+		return CODA_RISPOSTA;
+	}
+	
+
 }
-
-
-
-

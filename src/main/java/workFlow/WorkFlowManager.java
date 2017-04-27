@@ -74,23 +74,28 @@ public class WorkFlowManager {
 		String response = null;
 		String corrId = java.util.UUID.randomUUID().toString();
 	    AMQP.BasicProperties props = new AMQP.BasicProperties.Builder().correlationId(corrId).replyTo(replyQueueName).build();
+	    if (database.equals("postgreSQL")){
+	    	this.requestQueueName = "CODA_RICHIESTA_POSTGRES" ;
+	    }
+	    if (database.equals("mongoDB")){
+	    	this.requestQueueName = "CODA_RICHIESTA_MONGO" ;
+	    }
+	    if (database.equals("neo4j")){
+	    	this.requestQueueName = "CODA_RICHIESTA_NEO4J" ;
+	    }
+	    messaggioJson.addProperty("codaRisposta", "CODA_RICEZIONE_WORKFLOW");
 	    String message = messaggioJson.toString();
-	    if (database.equals("postgreSQL"))
-	    	this.requestQueueName = "CODA_RICHIESTA_POSTGRES_DA_WF" ;
-	    if (database.equals("mongoDB"))
-	    	this.requestQueueName = "CODA_RICHIESTA_MONGO_DA_WF" ;
-	    if (database.equals("neo4j"))
-	    	this.requestQueueName = "CODA_RICHIESTA_NEO4J_DA_WF" ;
-		channel.basicPublish("", this.requestQueueName, props, message.getBytes("UTF-8"));
+	    channel.basicPublish("", this.requestQueueName, props, message.getBytes("UTF-8"));
 		
 		//gestione del ritorno del risultato delle query
 		while (true) {
-	        QueueingConsumer.Delivery delivery = consumer.nextDelivery();
-	        if (delivery.getProperties().getCorrelationId().equals(corrId)) {
-	            response = new String(delivery.getBody());
-	            break;
-	        }
-	    }
+			QueueingConsumer.Delivery delivery = consumer.nextDelivery();
+			if (delivery.getProperties().getCorrelationId().equals(corrId)){
+			response = new String(delivery.getBody());
+			break;
+			}
+
+		}
 		//la risposta sarà un jsonArray in formato stringa. Lo devo riconvertire
 		JsonParser parser = new JsonParser();
 		JsonArray risultati = parser.parse(response).getAsJsonArray();

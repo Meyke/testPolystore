@@ -16,17 +16,12 @@ import com.rabbitmq.client.ConsumerCancelledException;
 import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.ShutdownSignalException;
 
-/**
- * client del docker postgres che chiede al docker neo4j di eseguire una query per integrarla nel suo risultato
- * @author micheletedesco1
- *
- */
 @SuppressWarnings("deprecation")
 public class ClientPostgresForNeo4j {
 	private Connection connection;
     private Channel channel;
     private String requestQueueName;
-    private String replyQueueName = "CODA_RICEZIONE_POSTGRES_DA_NEO4J";
+    private String replyQueueName = "CODA_RICEZIONE_POSTGRES";
 	private QueueingConsumer consumer;
 	
 	
@@ -46,8 +41,9 @@ public class ClientPostgresForNeo4j {
 		String response = null;
 		String corrId = java.util.UUID.randomUUID().toString();
 	    AMQP.BasicProperties props = new AMQP.BasicProperties.Builder().correlationId(corrId).replyTo(replyQueueName).build();
+	    messaggioJson.addProperty("codaRisposta", "CODA_RICEZIONE_POSTGRES");
 	    String message = messaggioJson.toString();
-	    this.requestQueueName = "CODA_RICHIESTA_NEO4J_DA_POSTGRES" ;
+	    this.requestQueueName = "CODA_RICHIESTA_NEO4J" ;
 		channel.basicPublish("", this.requestQueueName, props, message.getBytes("UTF-8"));
 		
 		//gestione del ritorno del risultato delle query
