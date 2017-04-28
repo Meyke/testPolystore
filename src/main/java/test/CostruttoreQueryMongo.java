@@ -13,7 +13,6 @@ import com.mongodb.DBObject;
 // ricordarsi di aprire il server ./mongod
 public class CostruttoreQueryMongo implements CostruttoreQuery {
 
-	@Override
 	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows) throws Exception {
 		boolean richiestaJoin = false;
 		String parametroJoin = null;
@@ -23,10 +22,10 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 		System.out.println(tabella);
 		List<List<String>> condizioniPerQuellaTabella = mappaWhere.get(tabella);
 		System.out.println(condizioniPerQuellaTabella.toString());
-		
-		
 		BasicDBObject query = new BasicDBObject();
 		System.out.println(condizioniPerQuellaTabella.size());
+		if(condizioniPerQuellaTabella.size()==0)
+			risultato = eseguiQueryDirettamente(query,tabella);
 		for(int i=0; i<condizioniPerQuellaTabella.size(); i++){
 			//estraggo la riga i-esima della matrice
 			List<String> condizione = condizioniPerQuellaTabella.get(i);
@@ -57,6 +56,7 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 				System.out.println(risultato.toString());
 			}
 		}
+		System.out.println(risultato.toString());
 		return risultato;
 	}
 
@@ -67,6 +67,7 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 		JsonParser parser = new JsonParser();
 		while (cursor.hasNext()){
 			BasicDBObject oggetto = (BasicDBObject) cursor.next();
+			oggetto.removeField("_id");
 			String documentoInFormatoStringa = oggetto.toString();
 			JsonObject documentoInFormatoJson = parser.parse(documentoInFormatoStringa).getAsJsonObject();	
 			documenti.add(documentoInFormatoJson);
@@ -77,11 +78,19 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 	private JsonArray effettuaJoin(DBObject query, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella) throws Exception {
 		JsonObject elementoRisultatoPrecedente;
 		JsonArray risultati = new JsonArray();
+		System.out.println("parametroJoin: "+ parametroJoin+"/nvalueJoin: "+valueJoin);
 		
 		for(int i=0; i<risQueryPrec.size(); i++){
 			elementoRisultatoPrecedente = risQueryPrec.get(i).getAsJsonObject();
 			System.out.println(elementoRisultatoPrecedente.toString());
-			int valore = elementoRisultatoPrecedente.get("id").getAsInt(); //comunque la primary key se voglio parametrizzare
+			String parametro = valueJoin.split("\\.")[1];
+			System.out.println("PARAMETRO="+parametro);
+			System.out.println(elementoRisultatoPrecedente.toString());
+			int valore;
+			if(elementoRisultatoPrecedente.get(parametro) == null) //Dato che Neo4J restituisce dati del tipo per esempio: store.store_id
+				valore =  elementoRisultatoPrecedente.get(valueJoin).getAsInt();
+			else
+			    valore = elementoRisultatoPrecedente.get(parametro).getAsInt(); //casi senza Neo4J (es: store_id)
 			DBObject queryTemporanea = new BasicDBObject();
 			queryTemporanea.putAll(query);
 			parametroJoin = parametroJoin.replace(tabella+".", "");
