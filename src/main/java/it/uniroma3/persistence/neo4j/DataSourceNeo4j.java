@@ -16,7 +16,7 @@ public class DataSourceNeo4j {
 	
 	public GraphDatabaseService getDatabase(){
 		this.dbFactory = new GraphDatabaseFactory();
-		File storeFile = new File("/Users/micheletedesco1/Documents/Neo4j/default.graphdb");
+		File storeFile = new File("/Users/leorossi/Documents/Neo4j/default.graphdb");
 		this.graphDB = dbFactory.newEmbeddedDatabase(storeFile);
 		return graphDB;
 	}

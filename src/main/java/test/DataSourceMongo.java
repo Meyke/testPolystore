@@ -9,7 +9,7 @@ public class DataSourceMongo {
 	
 	public DB getDatabase() throws UnknownHostException{
 	MongoClient mongoClient = new MongoClient( "localhost" , 27017 );
-	DB db = mongoClient.getDB( "inventory" );
+	DB db = mongoClient.getDB( "testTirocinio" );
 	return db;
 	}
 

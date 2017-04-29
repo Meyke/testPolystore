@@ -18,7 +18,7 @@ public class FabbricatoreMappaStatement {
 	
 	
 	public FabbricatoreMappaStatement() {
-		this.mappaWhere = new HashMap<>();
+		this.mappaWhere = new HashMap<String, List<List<String>>>();
 	}
 
 
@@ -31,7 +31,7 @@ public class FabbricatoreMappaStatement {
 		
 		
 		for (String s : tabelle){
-			List<List<String>> matriceWherePreciso = new LinkedList<>();
+			List<List<String>> matriceWherePreciso = new LinkedList<List<String>>();
 			myjson = jsonCheMiServono.get(s);
 			JsonArray attributi = myjson.getAsJsonArray("members");
 			for(int i=0; i<attributi.size(); i++){

@@ -7,9 +7,9 @@ import java.sql.*;
 public class DataSource {
 	
 	
-	private String dbURI = "jdbc:postgresql://localhost/CustomerData";
+	private String dbURI = "jdbc:postgresql://localhost/testTir";
 	private String userName = "postgres";
-	private String password = "rasenshuriken";
+	private String password = "postgres";
 
 	public Connection getConnection() throws PersistenceException {
 		Connection connection = null;

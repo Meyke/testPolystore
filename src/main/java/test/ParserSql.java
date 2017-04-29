@@ -32,21 +32,21 @@ public class ParserSql {
     	
     	//creo la listaSELECT
     	List<SelectItem> listaSelectItems = ps.getSelectItems();
-    	this.listaProiezioni = new LinkedList<>();
+    	this.listaProiezioni = new LinkedList<String>();
     	for (SelectItem elemento : listaSelectItems){
     		String elementoStringato = elemento.toString();
     		this.listaProiezioni.add(elementoStringato);
     	}
     	
     	//creo la matriceWHERE
-    	this.matriceWhere = new LinkedList<>();
+    	this.matriceWhere = new LinkedList<List<String>>();
     	Expression oggettoWhere = ps.getWhere();
     	if (oggettoWhere != null){
     		String oggettoStringaWhere = ps.getWhere().toString();
     		String[] oggettiStatement = oggettoStringaWhere.split("AND");
     		for (int i=0; i<oggettiStatement.length; i++){
     			String[] oggettiStatementSeparati = oggettiStatement[i].split("=");
-    			List<String> rigaMatrice = new LinkedList<>();
+    			List<String> rigaMatrice = new LinkedList<String>();
     			rigaMatrice.add(oggettiStatementSeparati[0].replaceAll("\\s+","")); //st = st.replaceAll("\\s+","")
     			oggettiStatementSeparati[1] = oggettiStatementSeparati[1].replaceFirst("\\s+","");
     			if (oggettiStatementSeparati[1].endsWith(" ")){

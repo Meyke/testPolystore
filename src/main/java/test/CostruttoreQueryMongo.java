@@ -56,7 +56,7 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 				System.out.println(risultato.toString());
 			}
 		}
-		System.out.println(risultato.toString());
+		System.out.println("Risultato da CostruttoreQueryMongo: " + risultato.toString());
 		return risultato;
 	}
 

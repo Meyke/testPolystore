@@ -14,7 +14,7 @@ public class DataSourcePostgres {
 	
 	private String dbURI = "jdbc:postgresql://localhost/testTir";
 	private String userName = "postgres";
-	private String password = "rasenshuriken";
+	private String password = "postgres";
 
 	public Connection getConnection() throws PersistenceException {
 		Connection connection = null;

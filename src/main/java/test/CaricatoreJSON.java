@@ -3,12 +3,12 @@ package test;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.HashMap;
-
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
-
+import java.util.Set;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -17,11 +17,11 @@ import com.google.gson.JsonParser;
 public class CaricatoreJSON {
 	private Map<String,JsonObject> jsonCheMiServono;
 	public CaricatoreJSON() {
-		this.jsonCheMiServono = new HashMap<>();
+		this.jsonCheMiServono = new HashMap<String, JsonObject>();
 	}
 
 	public void caricaJSON(List<String> listaFrom) throws FileNotFoundException{
-		File fileJSON = new File("/Users/micheletedesco1/Desktop/fileJSON.txt");
+		File fileJSON = new File("/Users/leorossi/Desktop/fileJSON.txt");
 		Scanner scanner = new Scanner(fileJSON);
 		while (scanner.hasNextLine()) {
 			String line = scanner.nextLine();
@@ -52,7 +52,7 @@ public class CaricatoreJSON {
 		//String tabellaPreferita = tabelle.get(0);
 		if (tabelle.size()==1)
 			return tabelle;
-		List<String> tabellePreferite = new LinkedList<>();
+		List<String> tabellePreferite = new LinkedList<String>();
 		//tabellePreferite.add(tabellaPreferita);
 		for(int i=0; i<tabelle.size();i++){
 			JsonObject oggetto = jsonUtili.get(tabelle.get(i)); //es customer
@@ -68,14 +68,8 @@ public class CaricatoreJSON {
 				}
 			}
 		}	
-		System.out.println(tabellePreferite);
+		System.out.println("LISTA DELLE TABELLE PREFERITE =" +tabellePreferite+"\n");
 		return tabellePreferite;
 	}
-	
-
-
-	
-	
-
 }
 

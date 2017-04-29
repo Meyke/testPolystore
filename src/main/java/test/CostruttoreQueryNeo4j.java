@@ -11,7 +11,6 @@ import com.google.gson.JsonObject;
 
 public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 
-	@Override
 	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows) throws Exception {	
 		boolean richiestaJoin = false;
 		String parametroJoin = null;
@@ -54,11 +53,13 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 				JsonArray membriTabella = myJson.getAsJsonArray("members");
 				for (int iterator=0; iterator<membriTabella.size(); iterator++){
 					String membro = membriTabella.get(iterator).getAsString();
+					//if(!membro.equals("rental.rental_date")){
 					if (iterator == membriTabella.size()-1){
 						membriReturn.append(membro);
 					}
 					else membriReturn.append(membro + ", ");
 				}
+				//}
 				queryRiscritta.append(" RETURN " + membriReturn);// per ritornare tutti i campi della tabella neo4j
 				System.out.println(queryRiscritta.toString());
 				risultato = eseguiQueryDirettamente(queryRiscritta);
@@ -81,6 +82,7 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 			System.out.println(queryRiscritta);
 			risultato = eseguiQueryDirettamente(queryRiscritta);
 		}
+		System.out.println(risultato.toString());
 		return risultato;
 	}
 	

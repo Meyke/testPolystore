@@ -25,7 +25,7 @@ public class ParserNeo4j {
 	
 	public void spezza(String cypherQuery) throws JSQLParserException, FileNotFoundException{	
 		//creo la lista from
-		this.tableList = new LinkedList<>(); 
+		this.tableList = new LinkedList<String>(); 
 		File fileJSON = new File("/Users/micheletedesco1/Desktop/fileJSON.txt");
 		Scanner scanner = new Scanner(fileJSON);
 		//{'table' : 'persona', 'database' : 'postgerSQL', 'members':['persona.id', 'persona.nome', 'persona.scuola'] 'query' : 'SELECT * FROM persona WHERE 1=1'}
@@ -44,7 +44,7 @@ public class ParserNeo4j {
 		
 		String[] parti2 = null;
 		//creo la listaWhere
-		this.matriceWhere = new LinkedList<>();
+		this.matriceWhere = new LinkedList<List<String>>();
 		String[] parti = cypherQuery.split(" WHERE ");
 		if (parti.length>1){
 			parti2 = parti[1].split(" RETURN ");
@@ -53,7 +53,7 @@ public class ParserNeo4j {
 			String[] oggettiStatement = oggettoStringaWhere.split(" AND ");
 			for (int i=0; i<oggettiStatement.length; i++){
 				String[] oggettiStatementSeparati = oggettiStatement[i].split("=");
-				List<String> rigaMatrice = new LinkedList<>();
+				List<String> rigaMatrice = new LinkedList<String>();
 				rigaMatrice.add(oggettiStatementSeparati[0].replaceAll("\\s+","")); //st = st.replaceAll("\\s+","")
 				oggettiStatementSeparati[1] = oggettiStatementSeparati[1].replaceFirst("\\s+","");
 				if (oggettiStatementSeparati[1].endsWith(" ")){
@@ -68,7 +68,7 @@ public class ParserNeo4j {
 
 
 		//creo la listaSelect
-		this.listaProiezioni = new LinkedList<>();
+		this.listaProiezioni = new LinkedList<String>();
 		if (parti.length==1){
 			parti2 = cypherQuery.split(" RETURN ");
 		}	
