@@ -13,7 +13,7 @@ import com.mongodb.DBObject;
 // ricordarsi di aprire il server ./mongod
 public class CostruttoreQueryMongo implements CostruttoreQuery {
 
-	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows) throws Exception {
+	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows, Map<String, JsonObject> jsonUtili) throws Exception {
 		boolean richiestaJoin = false;
 		String parametroJoin = null;
 		String valueJoin = null;
@@ -50,7 +50,7 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 				valueJoin = condizione.get(1);
 			}
 			if (richiestaJoin)
-				risultato = effettuaJoin(query, risQueryPrec, parametroJoin, valueJoin, tabella);
+				risultato = effettuaJoin(query, risQueryPrec, parametroJoin, valueJoin, tabella, jsonUtili);
 			else{
 				risultato = eseguiQueryDirettamente(query,tabella);
 				System.out.println(risultato.toString());
@@ -75,9 +75,10 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 		return documenti;
 	}
 
-	private JsonArray effettuaJoin(DBObject query, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella) throws Exception {
+	private JsonArray effettuaJoin(DBObject query, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella,  Map<String, JsonObject> jsonUtili) throws Exception {
 		JsonObject elementoRisultatoPrecedente;
-		JsonArray risultati = new JsonArray();
+		JsonArray risultatiPrimoMembro = new JsonArray();
+		String secondoMembro = valueJoin.split("\\.")[0];
 		System.out.println("parametroJoin: "+ parametroJoin+"/nvalueJoin: "+valueJoin);
 		
 		for(int i=0; i<risQueryPrec.size(); i++){
@@ -97,10 +98,16 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 			queryTemporanea.put(parametroJoin, valore);
 			System.out.println("query temporanea " + queryTemporanea.toString());
 			JsonArray risultatiParziali = eseguiQueryDirettamente(queryTemporanea, tabella);
-			risultati = concatArray(risultati, risultatiParziali);
-			System.out.println(risultati.toString());
+			risultatiPrimoMembro = concatArray(risultatiPrimoMembro, risultatiParziali);
+			System.out.println(risultatiPrimoMembro.toString());
 		}
+		System.out.println("RISULTATI PRIMO MEMBRO : \n" +risultatiPrimoMembro);
+		GeneratoreRisultatiJoin g = new GeneratoreRisultatiJoin();
+		System.out.println("RISULTATI SECONDO MEMBRO : \n"+risQueryPrec.toString()+"\n");
+		JsonArray risultati = g.unisciRisultati(risultatiPrimoMembro, risQueryPrec, jsonUtili, secondoMembro, parametroJoin);
+		System.out.println("\n\nPARAMETRO JOIN = \n"+parametroJoin+"\n\nPROVA PARAMETRO JOIN (nel caso in cui ci sia neo4j) =\n" + parametroJoin.split("\\_")[0]+"."+parametroJoin+"\n");
 		return risultati;
+		
 	}		
 
 	private JsonArray concatArray(JsonArray arr1, JsonArray arr2){

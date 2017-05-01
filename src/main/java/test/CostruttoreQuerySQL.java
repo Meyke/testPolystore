@@ -90,7 +90,7 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 			//concateno i vari jsonArray
 		}
 		GeneratoreRisultatiJoin g = new GeneratoreRisultatiJoin();
-		JsonArray risultati = g.unisciRisultati(risultatiPrimoMembro, risQueryPrec, jsonUtili, secondoMembro);
+		JsonArray risultati = g.unisciRisultati(risultatiPrimoMembro, risQueryPrec, jsonUtili, secondoMembro, parametroJoin);
 		System.out.println("RISULTATI SECONDO MEMBRO : \n"+risQueryPrec.toString()+"\n");
 		return risultati;//devo ritornare il jsonArray
 	}

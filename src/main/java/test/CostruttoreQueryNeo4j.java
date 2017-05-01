@@ -11,7 +11,7 @@ import com.google.gson.JsonObject;
 
 public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 
-	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows) throws Exception {	
+	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows,  Map<String, JsonObject> jsonUtili) throws Exception {	
 		boolean richiestaJoin = false;
 		String parametroJoin = null;
 		String valueJoin = null;
@@ -47,7 +47,7 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 				valueJoin = condizione.get(1);	
 			}
 			if (richiestaJoin == true)
-				risultato = effettuaJoin(queryRiscritta, risQueryPrec, parametroJoin, valueJoin, tabella, myJson);
+				risultato = effettuaJoin(queryRiscritta, risQueryPrec, parametroJoin, valueJoin, tabella, myJson, jsonUtili);
 			else{
 				StringBuilder membriReturn = new StringBuilder();
 				JsonArray membriTabella = myJson.getAsJsonArray("members");
@@ -86,12 +86,13 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 		return risultato;
 	}
 	
-	private JsonArray effettuaJoin(StringBuilder queryRiscritta, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella, JsonObject myJson) throws Exception{
+	private JsonArray effettuaJoin(StringBuilder queryRiscritta, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella, JsonObject myJson,  Map<String, JsonObject> jsonUtili) throws Exception{
 		GraphDao dao = new GraphDao();
 		JsonObject elementoRisultatoPrecedente;
 		StringBuilder queryTemporanea;
 		String sottoStringa;
-		JsonArray risultati = new JsonArray();
+		String secondoMembro = valueJoin.split("\\.")[0];
+		JsonArray risultatiPrimoMembro = new JsonArray();
 		//effettuo il join un risultato per volta
 		for (int i=0; i<risQueryPrec.size(); i++){
 			elementoRisultatoPrecedente = risQueryPrec.get(i).getAsJsonObject();//dovrei ottenere un jsonObject
@@ -120,13 +121,16 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 			System.out.println(queryTemporanea.toString());
 			Result rigaRisultato = dao.interroga(queryTemporanea.toString());
 			JsonArray risultatiParziali = Convertitore.convertCypherToJSON(rigaRisultato);
-			risultati = concatArray(risultati, risultatiParziali);
-			System.out.println(risultati.toString());
+			risultatiPrimoMembro = concatArray(risultatiPrimoMembro, risultatiParziali);
+			System.out.println(risultatiPrimoMembro.toString());
 			//concateno i vari jsonArray
 		}
+		System.out.println("RISULTATI PRIMO MEMBRO : \n" +risultatiPrimoMembro);
+		GeneratoreRisultatiJoin g = new GeneratoreRisultatiJoin();
+		JsonArray risultati = g.unisciRisultati(risultatiPrimoMembro, risQueryPrec, jsonUtili, secondoMembro, parametroJoin);
+		System.out.println("RISULTATI SECONDO MEMBRO : \n"+risQueryPrec.toString()+"\n");
 		dao.chiudiConnessione();
-		return risultati; //devo ritornare il jsonArray
-		
+		return risultati;
 	}
 
 	

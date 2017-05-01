@@ -40,9 +40,9 @@ public class Action {
 		//String querySQL = "SELECT * FROM store, staff WHERE staff.store_id = store.store_id AND store.manager_staff_id = 4"; //OK
 		//String querySQL = "SELECT * FROM customer, store, address WHERE customer.store_id = store.store_id AND store.address_id = address.address_id AND address.address_id = 1"; //OK ma bug perchè customer e store conoscono entrambi address. Da risolvere se si conoscono tabelle in comune
 		
-		//test star query
-		String querySQL = "SELECT * FROM customer, address WHERE customer.address_id = address.address_id";
-		//String querySQL = "SELECT * FROM inventory, store WHERE inventory.store_id = store.store_id";
+		//test generatore Rsultati
+//		String querySQL = "SELECT * FROM inventory, film WHERE inventory.film_id = film.film_id"; 
+		String querySQL = "SELECT * FROM inventory, store WHERE inventory.store_id = store.store_id"; 
 		// NON FUNZIONA!! String querySQL = "SELECT * FROM rental, inventory, customer WHERE rental.customer_id = customer.customer_id AND rental.inventory_id = inventory.inventory_id AND customer.last_name = 'Rossi'";
 		
 		
@@ -68,7 +68,7 @@ public class Action {
 		System.out.println("MAPPA WHERE :" + mappaWhere.toString()+"\n");
 		GestoreQuery gestoreQuerySql = new GestoreQuery();
 		JsonArray risultato = gestoreQuerySql.esegui(questoJson, null, jsonUtili, mappaWhere);
-		System.out.println("risultati:");
+		System.out.println("\nRISULTATI FINALI:\n");
 		System.out.println(risultato.toString()+"\n");
 	
 //--ricordarsi che il server di mongoDB deve sempre essere acceso, altrimenti non funziona.
@@ -96,7 +96,14 @@ public class Action {
 		JsonArray risultato = gestoreQuerySql.esegui(questoJson, null, jsonUtili, mappaWhere);
 		System.out.println(risultato.toString());
         */
-	
+		
+//		if(a.get(attrCorrente) == null)
+//			attrCorrente = attributiSecondoMembro.get(j).getAsString().split("\\.")[1];
+//		if(b.get(attrCorrente.split("\\.")[1])==null && a.get(attrCorrente) != null)
+//			b.add(attrCorrente.split("\\.")[1], a.get(attrCorrente));
+//		else if(b.get(attrCorrente.split("\\.")[1])==null)
+//			b.add(attrCorrente.split("\\.")[1], a.get(attrCorrente.split("\\.")[1]));
+//	}
 	}
 }
 
