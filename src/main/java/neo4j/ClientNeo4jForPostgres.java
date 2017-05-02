@@ -20,7 +20,7 @@ public class ClientNeo4jForPostgres {
 	private Connection connection;
     private Channel channel;
     private String requestQueueName;
-    private String replyQueueName = "CODA_RICEZIONE_NEO4J";
+    private String replyQueueName = "CODA_RISPOSTA_FOR_NEO4J";
 	private QueueingConsumer consumer;
 	
 	
@@ -36,13 +36,14 @@ public class ClientNeo4jForPostgres {
 	}
 
 
-	public JsonArray callNeo4j(JsonObject messaggioJson) throws UnsupportedEncodingException, IOException, ShutdownSignalException, ConsumerCancelledException, InterruptedException{
+	public JsonArray callPostgres(JsonObject messaggioJson) throws UnsupportedEncodingException, IOException, ShutdownSignalException, ConsumerCancelledException, InterruptedException{
+		System.out.println("invio a postgres: " + messaggioJson.toString());
 		String response = null;
 		String corrId = java.util.UUID.randomUUID().toString();
 	    AMQP.BasicProperties props = new AMQP.BasicProperties.Builder().correlationId(corrId).replyTo(replyQueueName).build();
-	    messaggioJson.addProperty("codaRisposta", "CODA_RICEZIONE_NEO4J");
+	    messaggioJson.addProperty("codaRisposta", "CODA_RISPOSTA_FOR_NEO4J");
 	    String message = messaggioJson.toString();
-	    this.requestQueueName = "CODA_RICHIESTA_POSTGRES" ;
+	    this.requestQueueName = "CODA_QUERY_TO_POSTGRES" ;
 		channel.basicPublish("", this.requestQueueName, props, message.getBytes("UTF-8"));
 		
 		//gestione del ritorno del risultato delle query

@@ -1,20 +1,21 @@
 package neo4j.persistence;
 
-import java.io.File;
-
 
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Result;
-import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 
+/**
+ * Questa classe si occupa di interrogare il database Neo4j, inviando una query Cypher
+ * @author micheletedesco1
+ *
+ */
 public class GraphDao {
-	private GraphDatabaseFactory dbFactory;
+	private DataSourceNeo4j datasource;
 	private GraphDatabaseService graphDB;
 	
 	public GraphDao(){
-		this.dbFactory = new GraphDatabaseFactory();
-		File storeFile = new File("/Users/micheletedesco1/Documents/Neo4j/default.graphdb");
-		this.graphDB = dbFactory.newEmbeddedDatabase(storeFile);
+		this.datasource = new DataSourceNeo4j();
+		this.graphDB = datasource.getDatabase();
 	}
 	
 	public Result interroga(String queryCQL){

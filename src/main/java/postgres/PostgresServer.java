@@ -18,7 +18,7 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 
 @SuppressWarnings("deprecation")
 public class PostgresServer {
-private final static String RPC_QUEUE_NAME = "CODA_RICHIESTA_POSTGRES";
+private final static String RPC_QUEUE_NAME = "CODA_QUERY_TO_POSTGRES";
 private String CODA_RISPOSTA;	
 	public String elaboraRisposta(String message) throws Exception{
 		//il messaggio è in formato stringa e lo devo convertire in json
@@ -62,6 +62,7 @@ private String CODA_RISPOSTA;
 	    	BasicProperties props = delivery.getProperties();
 	    	BasicProperties replyProps =new BasicProperties.Builder().correlationId(props.getCorrelationId()).build();
 	    	String message = new String(delivery.getBody(),"UTF-8");
+	    	System.out.println("MESSAGGIO: "+message);
 	    	PostgresServer postgresServer = new PostgresServer();
 	    	String response = postgresServer.elaboraRisposta(message);
 	    	System.out.println(" [x] Received ':'" + message + "'" + response ); 

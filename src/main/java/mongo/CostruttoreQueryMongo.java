@@ -1,8 +1,10 @@
-package daSistemare;
+package mongo;
 
 
 import java.util.List;
 import java.util.Map;
+
+import mongo.persistence.MongoDao;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -11,7 +13,7 @@ import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
 // ricordarsi di aprire il server ./mongod
-public class CostruttoreQueryMongo  {
+public class CostruttoreQueryMongo {
 
 	
 	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows) throws Exception {
@@ -27,6 +29,9 @@ public class CostruttoreQueryMongo  {
 		
 		BasicDBObject query = new BasicDBObject();
 		System.out.println(condizioniPerQuellaTabella.size());
+		if(condizioniPerQuellaTabella.size()==0)		
+			risultato = eseguiQueryDirettamente(query,tabella);
+		//può anche non sservire l'else
 		for(int i=0; i<condizioniPerQuellaTabella.size(); i++){
 			//estraggo la riga i-esima della matrice
 			List<String> condizione = condizioniPerQuellaTabella.get(i);
@@ -67,6 +72,7 @@ public class CostruttoreQueryMongo  {
 		JsonParser parser = new JsonParser();
 		while (cursor.hasNext()){
 			BasicDBObject oggetto = (BasicDBObject) cursor.next();
+			oggetto.removeField("_id");
 			String documentoInFormatoStringa = oggetto.toString();
 			JsonObject documentoInFormatoJson = parser.parse(documentoInFormatoStringa).getAsJsonObject();	
 			documenti.add(documentoInFormatoJson);
@@ -81,7 +87,14 @@ public class CostruttoreQueryMongo  {
 		for(int i=0; i<risQueryPrec.size(); i++){
 			elementoRisultatoPrecedente = risQueryPrec.get(i).getAsJsonObject();
 			System.out.println(elementoRisultatoPrecedente.toString());
-			int valore = elementoRisultatoPrecedente.get("id").getAsInt(); //comunque la primary key se voglio parametrizzare
+			String parametro = valueJoin.split("\\.")[1];
+			System.out.println("PARAMETRO="+parametro);
+			System.out.println(elementoRisultatoPrecedente.toString());
+			int valore;
+			if(elementoRisultatoPrecedente.get(parametro) == null) //Dato che Neo4J restituisce dati del tipo per esempio: store.store_id
+				valore =  elementoRisultatoPrecedente.get(valueJoin).getAsInt();
+			else
+				valore = elementoRisultatoPrecedente.get(parametro).getAsInt(); //casi senza Neo4J (es: store_id)
 			DBObject queryTemporanea = new BasicDBObject();
 			queryTemporanea.putAll(query);
 			parametroJoin = parametroJoin.replace(tabella+".", "");

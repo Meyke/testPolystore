@@ -1,4 +1,4 @@
-package daSistemare;
+package mongo.persistence;
 
 import java.net.UnknownHostException;
 import com.mongodb.DB;

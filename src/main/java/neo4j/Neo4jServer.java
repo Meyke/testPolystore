@@ -19,7 +19,7 @@ import com.rabbitmq.client.AMQP.BasicProperties;
 
 @SuppressWarnings("deprecation")
 public class Neo4jServer {
-private final static String RPC_QUEUE_NAME = "CODA_RICHIESTA_NEO4J";
+private final static String RPC_QUEUE_NAME = "CODA_QUERY_TO_NEO4J";
 private String CODA_RISPOSTA;
 	public String elaboraRisposta(String message) throws Exception{
 		//il messaggio è in formato stringa e lo devo convertire in json

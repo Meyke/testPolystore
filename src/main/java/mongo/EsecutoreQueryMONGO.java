@@ -1,20 +1,23 @@
-package postgres;
+package mongo;
 
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.Map;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+
+
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+
 /**
- * e' un mini workflowmanager
+ * è un mini workflowmanager
  * @author micheletedesco1
  *
  */
-public class EsecutoreQuerySQL {
+public class EsecutoreQueryMONGO {
 	public JsonArray esegui (JsonObject questoJson, JsonArray risQueryPrec, Map<String, JsonObject> jsonUtili, Map<String, List<List<String>>> mappaWhere) throws Exception{
 		int contatore = 0;
 		List<String> tabelleDaEseguirePerPrima = new LinkedList<>();
@@ -160,26 +163,26 @@ public class EsecutoreQuerySQL {
 	}
 	
 	private JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows) throws Exception {
-		CostruttoreQuerySQL costruttoreQuery = new CostruttoreQuerySQL();
+		CostruttoreQueryMongo costruttoreQuery = new CostruttoreQueryMongo();
 		return costruttoreQuery.eseguiQuery(myJson, risQueryPrec, mappaWhere,tabellaKnows);
 	}
 
 	private JsonArray eseguiAltraQuery(JsonObject myJson,JsonArray risQueryPrec, Map<String, JsonObject> jsonUtili, Map<String, List<List<String>>> mappaWhere) throws Exception{
 		JsonArray risultati = null;
 		if(myJson.get("database").getAsString().equals("postgreSQL")){
-			//rimango nel mio docker
-			EsecutoreQuerySQL esecutoreQuery = new EsecutoreQuerySQL();
-			risultati = esecutoreQuery.esegui(myJson, risQueryPrec, jsonUtili, mappaWhere);
+			//chiedo risultati al docker postgres
 			
 		}
 		if(myJson.get("database").getAsString().equals("neo4j")){
 			//chiedo i risultati al docker neo4j
 			JsonObject messaggioJson = creaJson(myJson, risQueryPrec, jsonUtili, mappaWhere);
-			risultati = new ClientPostgresForNeo4j().callNeo4j(messaggioJson);
+			risultati = new ClientMongoForNeo4j().callNeo4j(messaggioJson);
 			//ricordarsi (forse) di abbattere il clientPostgresForNeo4j. Altrimenti poi avrei diversi client. Per ora ok
 		}
 		if(myJson.get("database").getAsString().equals("mongoDB")){
-			//invio al docker mongoDB
+			//rimango nel mio docker
+			EsecutoreQueryMONGO esecutoreQuery = new EsecutoreQueryMONGO();
+			risultati = esecutoreQuery.esegui(myJson, risQueryPrec, jsonUtili, mappaWhere);
 		}
 		return risultati;
 		
@@ -201,5 +204,6 @@ public class EsecutoreQuerySQL {
 	}
 			
 }
+
 
 

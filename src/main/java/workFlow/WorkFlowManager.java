@@ -25,7 +25,7 @@ public class WorkFlowManager {
 	private Connection connection;
     private Channel channel;
     private String requestQueueName;
-    private String replyQueueName = "CODA_RICEZIONE_WORKFLOW";
+    private String replyQueueName = "CODA_RISULTATI_FOR_WORKFLOW";
 	private QueueingConsumer consumer;
 
 	public WorkFlowManager() throws IOException, TimeoutException {
@@ -75,15 +75,15 @@ public class WorkFlowManager {
 		String corrId = java.util.UUID.randomUUID().toString();
 	    AMQP.BasicProperties props = new AMQP.BasicProperties.Builder().correlationId(corrId).replyTo(replyQueueName).build();
 	    if (database.equals("postgreSQL")){
-	    	this.requestQueueName = "CODA_RICHIESTA_POSTGRES" ;
+	    	this.requestQueueName = "CODA_QUERY_TO_POSTGRES" ;
 	    }
 	    if (database.equals("mongoDB")){
-	    	this.requestQueueName = "CODA_RICHIESTA_MONGO" ;
+	    	this.requestQueueName = "CODA_QUERY_TO_MONGO" ;
 	    }
 	    if (database.equals("neo4j")){
-	    	this.requestQueueName = "CODA_RICHIESTA_NEO4J" ;
+	    	this.requestQueueName = "CODA_QUERY_TO_NEO4J" ;
 	    }
-	    messaggioJson.addProperty("codaRisposta", "CODA_RICEZIONE_WORKFLOW");
+	    messaggioJson.addProperty("codaRisposta", "CODA_RISULTATI_FOR_WORKFLOW");
 	    String message = messaggioJson.toString();
 	    channel.basicPublish("", this.requestQueueName, props, message.getBytes("UTF-8"));
 		

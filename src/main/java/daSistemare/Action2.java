@@ -7,18 +7,8 @@ import java.util.Map;
 
 
 
-
-
-
-
-import parser.ParserNeo4j;
-import workFlow.WorkFlowManager;
-
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-
-import coseUtili.CaricatoreJSON;
-import coseUtili.FabbricatoreMappaStatement;
 
 public class Action2 {
 public static void main(String[] args) throws Exception {
@@ -68,7 +58,7 @@ public static void main(String[] args) throws Exception {
 		fabbricatoreCondizione.creaMappaWhere(matriceWhere, jsonUtili);
 		Map<String, List<List<String>>> mappaWhere = fabbricatoreCondizione.getMappaWhere();
 		System.out.println("mappa di condizioni" + mappaWhere.toString());
-		WorkFlowManager gestoreQuerySql = new WorkFlowManager();
+		GestoreQuery gestoreQuerySql = new GestoreQuery();
 		JsonArray risultato = gestoreQuerySql.esegui(questoJson, null, jsonUtili, mappaWhere);
 		System.out.println("risultati:");
 		System.out.println(risultato.toString());

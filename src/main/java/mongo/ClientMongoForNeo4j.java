@@ -1,7 +1,6 @@
-package postgres;
+package mongo;
 
 import java.io.IOException;
-
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.TimeoutException;
 
@@ -17,15 +16,15 @@ import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.ShutdownSignalException;
 
 @SuppressWarnings("deprecation")
-public class ClientPostgresForNeo4j {
+public class ClientMongoForNeo4j {
 	private Connection connection;
     private Channel channel;
     private String requestQueueName;
-    private String replyQueueName = "CODA_RISPOSTA_FOR_POSTGRES";
+    private String replyQueueName = "CODA_RISPOSTA_FOR_MONGO";
 	private QueueingConsumer consumer;
 	
 	
-	public ClientPostgresForNeo4j() throws IOException, TimeoutException {
+	public ClientMongoForNeo4j() throws IOException, TimeoutException {
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost("localhost");
 		this.connection = factory.newConnection();
@@ -41,7 +40,7 @@ public class ClientPostgresForNeo4j {
 		String response = null;
 		String corrId = java.util.UUID.randomUUID().toString();
 	    AMQP.BasicProperties props = new AMQP.BasicProperties.Builder().correlationId(corrId).replyTo(replyQueueName).build();
-	    messaggioJson.addProperty("codaRisposta", "CODA_RISPOSTA_FOR_POSTGRES");
+	    messaggioJson.addProperty("codaRisposta", "CODA_RISPOSTA_FOR_MONGO");
 	    String message = messaggioJson.toString();
 	    this.requestQueueName = "CODA_QUERY_TO_NEO4J" ;
 		channel.basicPublish("", this.requestQueueName, props, message.getBytes("UTF-8"));
