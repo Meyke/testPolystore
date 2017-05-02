@@ -20,6 +20,7 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 		String valueJoin = null;
 		JsonArray risultato = null;
 		String tabella = myJson.get("table").getAsString();
+		String tabellaDaUnire = null;
 		System.out.println(tabella);
 		List<List<String>> condizioniPerQuellaTabella = mappaWhere.get(tabella);
 		System.out.println(condizioniPerQuellaTabella.toString());
@@ -27,6 +28,9 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 		
 		BasicDBObject query = new BasicDBObject();
 		System.out.println(condizioniPerQuellaTabella.size());
+		if(condizioniPerQuellaTabella.size()==0)		
+			risultato = eseguiQueryDirettamente(query,tabella);
+		//può anche non sservire l'else
 		for(int i=0; i<condizioniPerQuellaTabella.size(); i++){
 			//estraggo la riga i-esima della matrice
 			List<String> condizione = condizioniPerQuellaTabella.get(i);
@@ -46,12 +50,13 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 				query.put(parametro, value);
 			}
 			else{
+				tabellaDaUnire = tabellaKnows.get("table").getAsString();
 				richiestaJoin = true; 
 				parametroJoin = condizione.get(0);
 				valueJoin = condizione.get(1);
 			}
 			if (richiestaJoin)
-				risultato = effettuaJoin(query, risQueryPrec, parametroJoin, valueJoin, tabella);
+				risultato = effettuaJoin(query, risQueryPrec, parametroJoin, valueJoin, tabella, tabellaDaUnire);
 			else{
 				risultato = eseguiQueryDirettamente(query,tabella);
 				System.out.println(risultato.toString());
@@ -67,21 +72,31 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 		JsonParser parser = new JsonParser();
 		while (cursor.hasNext()){
 			BasicDBObject oggetto = (BasicDBObject) cursor.next();
+			oggetto.removeField("_id");
 			String documentoInFormatoStringa = oggetto.toString();
 			JsonObject documentoInFormatoJson = parser.parse(documentoInFormatoStringa).getAsJsonObject();	
 			documenti.add(documentoInFormatoJson);
 		}
+		documenti = Convertitore.convertMongoToJSON(documenti, tabella);
 		return documenti;
 	}
 
-	private JsonArray effettuaJoin(DBObject query, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella) throws Exception {
+	private JsonArray effettuaJoin(DBObject query, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella, String tabellaDaUnire) throws Exception {
+		String fk = parametroJoin;
 		JsonObject elementoRisultatoPrecedente;
 		JsonArray risultati = new JsonArray();
 		
 		for(int i=0; i<risQueryPrec.size(); i++){
 			elementoRisultatoPrecedente = risQueryPrec.get(i).getAsJsonObject();
 			System.out.println(elementoRisultatoPrecedente.toString());
-			int valore = elementoRisultatoPrecedente.get("id").getAsInt(); //comunque la primary key se voglio parametrizzare
+			String parametro = valueJoin.split("\\.")[1];
+			System.out.println("PARAMETRO="+parametro);
+			System.out.println(elementoRisultatoPrecedente.toString());
+			int valore;
+			if(elementoRisultatoPrecedente.get(parametro) == null) //Dato che Neo4J restituisce dati del tipo per esempio: store.store_id
+				valore =  elementoRisultatoPrecedente.get(valueJoin).getAsInt();
+			else
+				valore = elementoRisultatoPrecedente.get(parametro).getAsInt(); //casi senza Neo4J (es: store_id)
 			DBObject queryTemporanea = new BasicDBObject();
 			queryTemporanea.putAll(query);
 			parametroJoin = parametroJoin.replace(tabella+".", "");
@@ -91,7 +106,9 @@ public class CostruttoreQueryMongo implements CostruttoreQuery {
 			risultati = concatArray(risultati, risultatiParziali);
 			System.out.println(risultati.toString());
 		}
-		return risultati;
+		UnitoreColonne unitore = new UnitoreColonne();
+		JsonArray risultatiUniti = unitore.unisciColonne(risultati,risQueryPrec,fk, tabellaDaUnire);
+		return risultatiUniti;
 	}		
 
 	private JsonArray concatArray(JsonArray arr1, JsonArray arr2){

@@ -25,6 +25,9 @@ public class Action {
 	    //String querySQL = "SELECT * FROM rental"; //OK
 	    //String querySQL = "SELECT * FROM payment"; //OK
 	    //String querySQL = "SELECT * FROM staff"; //OK
+		//String querySQL = "SELECT * FROM inventory"; //OK
+		//String querySQL = "SELECT * FROM film"; //OK
+		//String querySQL = "SELECT * FROM film WHERE film.title = 'Rocky I'";
 		
 		//String querySQL = "SELECT * FROM address, customer WHERE customer.address_id = address.address_id AND address.phone = '1234'"; //OK
 		//String querySQL = "SELECT * FROM address, customer, city WHERE customer.address_id = address.address_id AND address.city_id = city.city_id AND city.city = 'Roma'"; //OK
@@ -35,9 +38,18 @@ public class Action {
 		//String querySQL = "SELECT * FROM payment, staff WHERE payment.staff_id = staff.staff_id AND staff.last_name = 'Giannini'"; //OK
 		//String querySQL = "SELECT * FROM store, address WHERE store.address_id = address.address_id AND address.address = 'via sala'";//OK
 		//String querySQL = "SELECT * FROM store, staff WHERE staff.store_id = store.store_id AND store.manager_staff_id = 4"; //OK
-		String querySQL = "SELECT * FROM customer, store, address WHERE customer.store_id = store.store_id AND store.address_id = address.address_id AND address.address_id = 1"; //OK ma bug perchè customer e store conoscono entrambi address. Da risolvere se si conoscono tabelle in comune
+		String querySQL = "SELECT * FROM customer, store, address WHERE customer.store_id = store.store_id AND store.address_id = address.address_id AND address.address_id = 1"; //OK
 		//String querySQL = "SELECT * FROM payment, staff WHERE payment.staff_id = staff.staff_id";
 		//String querySQL = "SELECT * FROM customer, payment, staff WHERE payment.customer_id = customer.customer_id AND payment.staff_id = staff.staff_id AND customer.last_name = 'Tedesco'"; //OK
+		//String querySQL = "SELECT * FROM customer, payment, staff WHERE payment.customer_id = customer.customer_id AND payment.staff_id = staff.staff_id"; //OK
+		//String querySQL = "SELECT * FROM customer, payment, staff WHERE payment.customer_id = customer.customer_id AND payment.staff_id = staff.staff_id AND staff.staff_id = 1"; //OK
+		
+		//String querySQL = "SELECT * FROM customer, rental, inventory, film WHERE rental.customer_id = customer.customer_id AND rental.inventory_id = inventory.inventory_id"; // no 
+		//String querySQL = "SELECT * FROM rental, inventory, film WHERE rental.inventory_id = inventory.inventory_id AND inventory.film_id = film.film_id AND film.title = 'I Mercenari'"; //OK
+		//String querySQL = "SELECT * FROM customer, rental WHERE rental.customer_id = customer.customer_id"; //OK
+		//String querySQL = "SELECT * FROM customer, rental, inventory, film WHERE rental.customer_id = customer.customer_id AND rental.inventory_id = inventory.inventory_id AND inventory.film_id = film.film_id AND film.title = 'I Mercenari'";
+		
+		//String querySQL = "SELECT * FROM inventory, film WHERE inventory.film_id = film.film_id AND film.title = 'I Mercenari'"; //OK
 		
 		ParserSql parser = new ParserSql();
 		parser.spezza(querySQL);//spezzo la query

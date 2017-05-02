@@ -10,13 +10,14 @@ import com.google.gson.JsonObject;
 public class CostruttoreQuerySQL implements CostruttoreQuery{
 	
 	
-	//questo è un eseguiquerySQL. chiamarlo costruttoreQuerySql. Rivedere
+	@Override
 	public JsonArray eseguiQuery(JsonObject myJson,JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows) throws Exception{
 		boolean richiestaJoin = false;
 		String parametroJoin = null;
 		String valueJoin = null;
 		JsonArray risultato = null;
 		String tabella = myJson.get("table").getAsString();
+		String tabellaDaUnire = null;
 		System.out.println(tabella);
 		String queryBase = "SELECT * FROM "+ tabella + " WHERE 1=1";
 		List<List<String>> condizioniPerQuellaTabella = mappaWhere.get(tabella);
@@ -42,25 +43,26 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 			}
 			else{
 				//altrimenti è richiesto un join. Setto a true la variabile richiestaJoin. Generalizzare se più join 
+				tabellaDaUnire = tabellaKnows.get("table").getAsString();
 				richiestaJoin = true;
 				parametroJoin = condizione.get(0);
 				valueJoin = condizione.get(1);	
 			}
 			if (richiestaJoin == true)
-				risultato = effettuaJoin(queryRiscritta, risQueryPrec, parametroJoin, valueJoin);
+				risultato = effettuaJoin(queryRiscritta, risQueryPrec, parametroJoin, valueJoin, tabella, tabellaDaUnire);
 			else{
-				risultato = eseguiQueryDirettamente(queryRiscritta);
+				risultato = eseguiQueryDirettamente(queryRiscritta, tabella);
 				System.out.println(risultato.toString());
 			}
 			
 		}		
 		if (condizioniPerQuellaTabella.size() == 0){
-			risultato = eseguiQueryDirettamente(queryRiscritta);
+			risultato = eseguiQueryDirettamente(queryRiscritta, tabella);
 		}
 		return risultato;
 	}
 	
-	private JsonArray effettuaJoin(StringBuilder queryRiscritta, JsonArray risQueryPrec, String parametroJoin, String valueJoin) throws Exception{
+	private JsonArray effettuaJoin(StringBuilder queryRiscritta, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella, String tabellaDaUnire) throws Exception{
 		RelationalDao dao = new RelationalDao();
 		JsonObject elementoRisultatoPrecedente;
 		StringBuilder queryTemporanea;
@@ -81,12 +83,14 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 			//eseguo la stringa passandola al client rpc
 			System.out.println(queryTemporanea.toString());
 			ResultSet rigaRisultato = dao.interroga(queryTemporanea.toString());
-			JsonArray risultatiParziali = Convertitore.convertSQLToJSON(rigaRisultato);
+			JsonArray risultatiParziali = Convertitore.convertSQLToJSON(rigaRisultato, tabella);
 			risultati = concatArray(risultati, risultatiParziali);
 			System.out.println(risultati.toString());
 			//concateno i vari jsonArray
 		}
-		return risultati; //devo ritornare il jsonArray
+		UnitoreColonne unitore = new UnitoreColonne();
+		JsonArray risultatiUniti = unitore.unisciColonne(risultati,risQueryPrec,parametroJoin, tabellaDaUnire);
+		return risultatiUniti; //devo ritornare il jsonArray
 		
 	}
 
@@ -102,10 +106,10 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 	    return result;
 	}
 	
-	private JsonArray eseguiQueryDirettamente(StringBuilder queryRiscritta) throws Exception{
+	private JsonArray eseguiQueryDirettamente(StringBuilder queryRiscritta, String tabella) throws Exception{
 		RelationalDao dao = new RelationalDao();
 		ResultSet risultatoResultSet = dao.interroga(queryRiscritta.toString());
-		JsonArray risultati = Convertitore.convertSQLToJSON(risultatoResultSet);
+		JsonArray risultati = Convertitore.convertSQLToJSON(risultatoResultSet, tabella);
 		return risultati;
 	}
 

@@ -18,6 +18,7 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 		String valueJoin = null;
 		JsonArray risultato = null;
 		String tabella = myJson.get("table").getAsString();
+		String tabellaDaUnire = null;
 		System.out.println(tabella);
 		String queryBase = "MATCH ("+ tabella + ":" + tabella +")" + " WHERE 1=1";
 		List<List<String>> condizioniPerQuellaTabella = mappaWhere.get(tabella);
@@ -43,12 +44,13 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 			}
 			else{
 				//altrimenti è richiesto un join. Setto a true la variabile richiestaJoin. Generalizzare se più join 
+				tabellaDaUnire = tabellaKnows.get("table").getAsString();
 				richiestaJoin = true;
 				parametroJoin = condizione.get(0);
 				valueJoin = condizione.get(1);	
 			}
 			if (richiestaJoin == true)
-				risultato = effettuaJoin(queryRiscritta, risQueryPrec, parametroJoin, valueJoin, tabella, myJson);
+				risultato = effettuaJoin(queryRiscritta, risQueryPrec, parametroJoin, valueJoin, tabella, myJson, tabellaDaUnire);
 			else{
 				StringBuilder membriReturn = new StringBuilder();
 				JsonArray membriTabella = myJson.getAsJsonArray("members");
@@ -84,7 +86,7 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 		return risultato;
 	}
 	
-	private JsonArray effettuaJoin(StringBuilder queryRiscritta, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella, JsonObject myJson) throws Exception{
+	private JsonArray effettuaJoin(StringBuilder queryRiscritta, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella, JsonObject myJson, String tabellaDaUnire) throws Exception{
 		GraphDao dao = new GraphDao();
 		JsonObject elementoRisultatoPrecedente;
 		StringBuilder queryTemporanea;
@@ -123,7 +125,9 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 			//concateno i vari jsonArray
 		}
 		dao.chiudiConnessione();
-		return risultati; //devo ritornare il jsonArray
+		UnitoreColonne unitore = new UnitoreColonne();
+		JsonArray risultatiUniti = unitore.unisciColonne(risultati,risQueryPrec,parametroJoin, tabellaDaUnire);
+		return risultatiUniti; //devo ritornare il jsonArray
 		
 	}
 
