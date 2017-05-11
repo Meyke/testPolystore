@@ -64,6 +64,7 @@ public class Action {
 			convertForPrinting(risultato);
 			request.setAttribute("attributi", this.attributi);
 			request.setAttribute("matriceRisultati", this.matriceRisultati);
+			request.setAttribute("query", query);
 			//return "/risultati.jsp";
 		}
 		}catch (Exception e) {

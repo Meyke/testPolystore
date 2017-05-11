@@ -4,7 +4,9 @@ import java.sql.ResultSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.neo4j.graphdb.Result;
+import org.neo4j.driver.v1.Record;
+import org.neo4j.driver.v1.StatementResult;
+
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -43,12 +45,13 @@ public class Convertitore {
 	 * @return
 	 * @throws Exception
 	 */
-	public static JsonArray convertCypherToJSON(Result result) throws Exception {
+	public static JsonArray convertCypherToJSON(StatementResult result) throws Exception {
 		JsonArray jsonArray = new JsonArray();
 		while ( result.hasNext() ) {
-        	Map<String, Object> row = result.next();
+			Record record = result.next();
+        	Map<String, Object> row = record.asMap();
         	JsonObject obj = new JsonObject();
-            for ( String key : result.columns() )
+            for ( String key : result.keys() )
             { obj.addProperty(key,row.get(key).toString());
             }
             jsonArray.add(obj);

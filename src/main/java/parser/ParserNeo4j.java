@@ -28,7 +28,8 @@ public class ParserNeo4j {
 	public void spezza(String cypherQuery) throws JSQLParserException, FileNotFoundException{	
 		//creo la lista from
 		this.tableList = new LinkedList<>(); 
-		File fileJSON = new File("/Users/micheletedesco1/Desktop/fileJSON.txt");
+		ClassLoader classLoader = getClass().getClassLoader();
+		File fileJSON = new File(classLoader.getResource("fileJSON.txt").getFile());
 		Scanner scanner = new Scanner(fileJSON);
 		//{'table' : 'persona', 'database' : 'postgerSQL', 'members':['persona.id', 'persona.nome', 'persona.scuola'] 'query' : 'SELECT * FROM persona WHERE 1=1'}
 		//{'table' : 'scuola', 'database' : 'mongoDB', 'members':['scuola.id', 'scuola.nome'] }

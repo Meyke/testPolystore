@@ -145,9 +145,24 @@
           </a>
           <div class="collapse" id="toggleDemo2" style="height: 0px;">
             <ul class="nav nav-list">
-              <li><a href="#">Inventory</a></li>
-              <li><a href="#">Film</a></li>
-              <li><a href="#">Actor</a></li>
+            <li><a href="#" style="color:blue" data-toggle="collapse" data-target="#toggleDemo16" data-parent="#sidenav01" class="collapsed"> inventory <span class="caret pull-right"></span></a><div class="collapse" id="toggleDemo16" style="height: 0px;">
+              <ul class="nav nav-list">
+                  <li><div align="right"><a href="#" style="color:black">inventory_id</a></div></li>
+                  <li><div align="right"><a href="#" style="color:black">film_id</a></div></li>
+                  <li><div align="right"><a href="#" style="color:black">store_id</a></div></li>
+              </ul>
+                  </div>
+                  </li>
+              <li><a href="#" style="color:blue" data-toggle="collapse" data-target="#toggleDemo17" data-parent="#sidenav01" class="collapsed"> film <span class="caret pull-right"></span></a><div class="collapse" id="toggleDemo17" style="height: 0px;">
+              <ul class="nav nav-list">
+                  <li><div align="right"><a href="#" style="color:black">film_id</a></div></li>
+                  <li><div align="right"><a href="#" style="color:black">title</a></div></li>
+                  <li><div align="right"><a href="#" style="color:black">release_year</a></div></li>
+                  <li><div align="right"><a href="#" style="color:black">language_id</a></div></li>
+                  <li><div align="right"><a href="#" style="color:black">original_language</a></div></li>
+              </ul>
+                  </div>
+                  </li>
             </ul>
           </div>
         </li>
@@ -163,7 +178,7 @@
 	<h3><i> Inserisci query nel linguaggio che conosci </i></h3>
 	
 </div>
-<i>Esempio: <font color="red">SELECT * FROM customer </font> oppure <font color="blue">db.customer.find({})</font> oppure <font color="green">MATCH(customer:customer) RETURN customer</font> </i>
+<i>Esempio: <font color="red">SELECT * FROM customer </font> oppure <font color="blue">db.customer.find({})</font> oppure <font color="green">MATCH(customer:customer) RETURN customer.*</font> </i>
 <div class="form_container">
 		<form action="controllerQuery" method="post">
 					<div class="form-group">
@@ -176,6 +191,7 @@
 				</form>
 			</div>
 </div>
+<div class="panel-heading">${query}</div>
 <table class="table table-bordered" style="width :100%">
                 <thead>
                 <tr>

@@ -19,9 +19,9 @@ import com.google.gson.JsonObject;
  *
  */
 public class FacadeMongo {
-	public JsonArray gestisciQuery(String querySQL) throws Exception{
+	public JsonArray gestisciQuery(String queryMongo) throws Exception{
 		ParserMongov2 parser = new ParserMongov2();
-		parser.spezza(querySQL);//spezzo la query
+		parser.spezza(queryMongo);//spezzo la query
 		List<String> tabelle = parser.getTabelle();//ottengo le tabelle che formano la query
 		List<List<String>> matriceWhere = parser.getMatriceWhere();
 		CaricatoreJSON caricatoreDAFile = new CaricatoreJSON();

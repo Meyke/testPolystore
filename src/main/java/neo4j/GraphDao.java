@@ -1,8 +1,9 @@
 package neo4j;
 
 
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Result;
+import org.neo4j.driver.v1.Session;
+import org.neo4j.driver.v1.StatementResult;
+
 
 /**
  * Questa classe si occupa di interrogare il database Neo4j, inviando una query Cypher
@@ -11,20 +12,20 @@ import org.neo4j.graphdb.Result;
  */
 public class GraphDao {
 	private DataSourceNeo4j datasource;
-	private GraphDatabaseService graphDB;
+	private Session session;
 	
 	public GraphDao(){
 		this.datasource = new DataSourceNeo4j();
-		this.graphDB = datasource.getDatabase();
+		this.session = datasource.getSession();
 	}
 	
-	public Result interroga(String queryCQL){
-		Result result = graphDB.execute(queryCQL);
+	public StatementResult interroga(String queryCQL){
+		StatementResult result = session.run(queryCQL);
         return result;
 	}
 	
 	public void chiudiConnessione(){
-		this.graphDB.shutdown();
+		this.datasource.chiudiConnesione();
 	}
 	
 

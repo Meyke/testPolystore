@@ -6,11 +6,11 @@ import java.util.Map;
 
 import neo4j.GraphDao;
 
-import org.neo4j.graphdb.Result;
+import org.neo4j.driver.v1.StatementResult;
+
 
 import utility.Convertitore;
 import utility.GestoreRisultato;
-
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -146,7 +146,7 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 			
 			//eseguo la stringa passandola al client rpc---- da fare
 			System.out.println(queryTemporanea.toString());
-			Result rigaRisultato = dao.interroga(queryTemporanea.toString());
+			StatementResult rigaRisultato = dao.interroga(queryTemporanea.toString());
 			JsonArray risultatiParziali = Convertitore.convertCypherToJSON(rigaRisultato);
 			risultati = concatArray(risultati, risultatiParziali);
 			System.out.println(risultati.toString());
@@ -179,7 +179,7 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 	 */
 	private JsonArray eseguiQueryDirettamente(StringBuilder queryRiscritta) throws Exception{
 		GraphDao dao = new GraphDao();
-		Result risultatoResult = dao.interroga(queryRiscritta.toString());
+		StatementResult risultatoResult = dao.interroga(queryRiscritta.toString());
 		JsonArray risultati = Convertitore.convertCypherToJSON(risultatoResult);
 		dao.chiudiConnessione(); //ultra importante, altrimenti avrei due connessioni sulla stessa porta. Conseguenza: collisione e quindi exception
 		return risultati;

@@ -19,7 +19,8 @@ public class CaricatoreJSON {
 	}
 
 	public void caricaJSON(List<String> listaFrom) throws FileNotFoundException{
-		File fileJSON = new File("/Users/micheletedesco1/Desktop/fileJSON.txt");
+		ClassLoader classLoader = getClass().getClassLoader();
+		File fileJSON = new File(classLoader.getResource("fileJSON.txt").getFile());
 		Scanner scanner = new Scanner(fileJSON);
 		while (scanner.hasNextLine()) {
 			String line = scanner.nextLine();

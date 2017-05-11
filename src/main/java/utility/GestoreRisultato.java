@@ -75,7 +75,7 @@ public class GestoreRisultato {
 	public static JsonArray proietta(List<String> listaProiezioni, JsonArray risultato, Map<String,JsonObject> jsonUtili) {
 		JsonArray risultatiProiettati = new JsonArray();
 		// per gestire il caso *
-		if (listaProiezioni.get(0).equals("*")){
+		if ((listaProiezioni.isEmpty()) || (listaProiezioni.get(0).equals("*"))){
 			return risultato;
 		}
 		for (int i=0; i<risultato.size();i++){
@@ -96,6 +96,19 @@ public class GestoreRisultato {
 			risultatiProiettati.add(rigaProiettata);
 		}
 		return risultatiProiettati;
+	}
+	
+	public static boolean controlloFK(JsonObject questoJson, String fkTabellaCheConosce,Map<String, List<List<String>>> mappaWhere ) {
+		boolean controllo = false;
+		List<List<String>> condizioniPerQuellaTabella = mappaWhere.get(questoJson.get("table").getAsString());
+		if (condizioniPerQuellaTabella.size()!=0){
+			for (List<String> condizioneIESIMA : condizioniPerQuellaTabella){
+				if(condizioneIESIMA.get(0).equals(fkTabellaCheConosce)){
+					controllo = true;
+				}
+			}
+		}
+		return controllo;
 	}
 
 }

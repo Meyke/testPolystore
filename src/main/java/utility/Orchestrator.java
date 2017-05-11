@@ -35,11 +35,12 @@ public class Orchestrator {
 		for (int i=0; i<entitaCheConosce.size(); i++){
 			String tabellaCheConosce = entitaCheConosce.get(i).getAsJsonObject().get("table").getAsString();
 			String fkTabellaCheConosce = entitaCheConosce.get(i).getAsJsonObject().get("foreignkey").getAsString();
-			if ((mappaWhere.get(tabellaCheConosce) != null) && (controlloFK(questoJson,fkTabellaCheConosce,mappaWhere)==true)) {  //confrontare anche se coincidono la fk di questo json con quello contenuto in mappawhere
+			if ((mappaWhere.get(tabellaCheConosce) != null) && (GestoreRisultato.controlloFK(questoJson,fkTabellaCheConosce,mappaWhere)==true)) {  //confrontare anche se coincidono la fk di questo json con quello contenuto in mappawhere
 				contatore ++;
 				tabelleDaEseguirePerPrima.add(entitaCheConosce.get(i).getAsJsonObject().get("table").getAsString());
 			}
 		}
+		
 		System.out.println("TABELLE DA ESEGUIRE PER PRIMA: " +tabelleDaEseguirePerPrima.toString() );
 		if (contatore <= 1){
 			System.out.println("eseguo in cascata "+ questoJson.get("table").getAsString());
@@ -53,18 +54,7 @@ public class Orchestrator {
 	}
 	
 	
-	private boolean controlloFK(JsonObject questoJson, String fkTabellaCheConosce,Map<String, List<List<String>>> mappaWhere ) {
-		boolean controllo = false;
-		List<List<String>> condizioniPerQuellaTabella = mappaWhere.get(questoJson.get("table").getAsString());
-		if (condizioniPerQuellaTabella.size()!=0){
-			for (List<String> condizioneIESIMA : condizioniPerQuellaTabella){
-				if(condizioneIESIMA.get(0).equals(fkTabellaCheConosce)){
-					controllo = true;
-				}
-			}
-		}
-		return controllo;
-	}
+	
 
 
 	private JsonArray eseguiInParallelo(JsonObject questoJson, JsonArray risQueryPrec, Map<String, JsonObject> jsonUtili, Map<String, List<List<String>>> mappaWhere, List<String> tabelleDaEseguirePerPrima) throws Exception {
@@ -183,12 +173,13 @@ public class Orchestrator {
 				System.out.println("ESEGUO A");
 				risultati = eseguiQuery(questoJson, null, mappaWhere, tabellaKnows,jsonUtili);
 			}
-			else  if((altroJson != null) && (controlloFK(questoJson,fkTabellaCheConosce,mappaWhere)==true)){
+			else  if((altroJson != null) && (GestoreRisultato.controlloFK(questoJson,fkTabellaCheConosce,mappaWhere)==true)){
 				System.out.println("ESEGUO B");
 				risultati = eseguiQuery(questoJson, esegui(altroJson, risQueryPrec, jsonUtili, mappaWhere), mappaWhere, tabellaKnows, jsonUtili);
 			
-			} else if(((altroJson != null) && (controlloFK(questoJson,fkTabellaCheConosce,mappaWhere)==false))){
+			} else if(((altroJson != null) && (GestoreRisultato.controlloFK(questoJson,fkTabellaCheConosce,mappaWhere)==false))){ //ok bidirezionali, ma non va bene con cicli
 				System.out.println("ESEGUO C");
+				System.out.println(risQueryPrec.toString()); //prova
 				risultati = eseguiQuery(questoJson, null, mappaWhere, tabellaKnows, jsonUtili);
 			}
 		}
