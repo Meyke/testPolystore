@@ -6,25 +6,40 @@ import java.util.Map;
 
 import neo4j.persistence.GraphDao;
 
-import org.neo4j.graphdb.Result;
+import org.neo4j.driver.v1.StatementResult;
+
+import utility.Convertitore;
+import utility.GestoreRisultato;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import coseUtili.Convertitore;
 
 
-
-
+/**
+ * La classe ha il compito di creare una query Cypher prendendo come spunto le informazioni sulla tabella di
+ * Neo4j (nodo) da interrogare, le condizioni associate a quella tabella e i risultati di query precedenti
+ * @author micheletedesco1
+ *
+ */
 public class CostruttoreQueryNeo4j {
 
-	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows) throws Exception {	
+	/**
+	 * Il metodo serve a costruire la query Cypher.
+	 * @param myJson un oggetto json che contiene informazioni su quella tabella (prelevate da un file per ora)
+	 * @param risQueryPrec un jsonArray che contiene i risultati della query precedente (per fare i join)
+	 * @param mappaWhere una mappa con key = tabella e value = condizioni per quella tabella
+	 * @param tabellaKnows contiene informazioni sulla tabella di join (se presente)
+	 * @param jsonUtili contiene informazioni sulle tabelle interrogare
+	 */	
+	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows, Map<String, JsonObject> jsonUtili) throws Exception {	
 		boolean richiestaJoin = false;
 		String parametroJoin = null;
 		String valueJoin = null;
 		JsonArray risultato = null;
 		String tabella = myJson.get("table").getAsString();
-		System.out.println(tabella);
+		String tabellaDaUnire = null;
+		System.out.println("eseguo: "+tabella);
 		String queryBase = "MATCH ("+ tabella + ":" + tabella +")" + " WHERE 1=1";
 		List<List<String>> condizioniPerQuellaTabella = mappaWhere.get(tabella);
 		System.out.println(condizioniPerQuellaTabella.toString());
@@ -39,22 +54,23 @@ public class CostruttoreQueryNeo4j {
 			List<String> condizione = condizioniPerQuellaTabella.get(i);
 			//effettuo un controllo per vedere se quella è una riga di join o meno
 			
-			System.out.println(condizione.get(0));
+			System.out.println("CONDIZIONE: "+condizione.get(0));
 			//System.out.println(myJson.get("foreignkey").getAsString());
 			if (!condizione.get(0).equals(tabellaKnows.get("foreignkey").getAsString())){ //da aggiungere<----------------
 				//se non è una condizione di join, la appendo direttamente alla query riscritta
-				String sottoStringa = " AND " + condizione.get(0) + " = " + condizione.get(1);
+				String sottoStringa = " AND " + condizione.get(0) + " " + condizione.get(2) + " " + condizione.get(1);
 				queryRiscritta.append(sottoStringa);
 				System.out.println(queryRiscritta.toString());
 			}
 			else{
 				//altrimenti è richiesto un join. Setto a true la variabile richiestaJoin. Generalizzare se più join 
+				tabellaDaUnire = tabellaKnows.get("table").getAsString();
 				richiestaJoin = true;
 				parametroJoin = condizione.get(0);
 				valueJoin = condizione.get(1);	
 			}
 			if (richiestaJoin == true)
-				risultato = effettuaJoin(queryRiscritta, risQueryPrec, parametroJoin, valueJoin, tabella, myJson);
+				risultato = effettuaJoin(queryRiscritta, risQueryPrec, parametroJoin, valueJoin, tabella, myJson, tabellaDaUnire, jsonUtili);
 			else{
 				StringBuilder membriReturn = new StringBuilder();
 				JsonArray membriTabella = myJson.getAsJsonArray("members");
@@ -90,7 +106,22 @@ public class CostruttoreQueryNeo4j {
 		return risultato;
 	}
 	
-	private JsonArray effettuaJoin(StringBuilder queryRiscritta, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella, JsonObject myJson) throws Exception{
+	/**
+	 * Il metodo serve a effettuare il join, ovvero legare i risultati della query precedente alla query in corso di sviluppo
+	 * @param queryRiscritta
+	 * @param risQueryPrec un jsonArray che contiene i risultati della query precedente (per fare i join)
+	 * @param parametroJoin la foreign key della tabella attuale (es. customer.store_id)
+	 * @param valueJoin il valore della foreign key della tabella attuale (es. store.store_id)
+	 * @param tabella nome della tabella da interrogare
+	 * @param tabellaDaUnire nome della tabella eseguita in precedenza e da cui ho ottenuto i risultati
+	 */
+	private JsonArray effettuaJoin(StringBuilder queryRiscritta, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella, JsonObject myJson, String tabellaDaUnire, Map<String, JsonObject> jsonUtili) throws Exception{
+		String query = queryRiscritta.toString();
+		if (query.contains("RETURN")){
+			query = query.split("RETURN")[0];
+			queryRiscritta = new StringBuilder(query);
+		}
+		
 		GraphDao dao = new GraphDao();
 		JsonObject elementoRisultatoPrecedente;
 		StringBuilder queryTemporanea;
@@ -122,18 +153,22 @@ public class CostruttoreQueryNeo4j {
 			
 			//eseguo la stringa passandola al client rpc---- da fare
 			System.out.println(queryTemporanea.toString());
-			Result rigaRisultato = dao.interroga(queryTemporanea.toString());
+			StatementResult rigaRisultato = dao.interroga(queryTemporanea.toString());
 			JsonArray risultatiParziali = Convertitore.convertCypherToJSON(rigaRisultato);
 			risultati = concatArray(risultati, risultatiParziali);
 			System.out.println(risultati.toString());
 			//concateno i vari jsonArray
 		}
 		dao.chiudiConnessione();
-		return risultati; //devo ritornare il jsonArray
+		JsonArray risultatiUniti = GestoreRisultato.unisciColonne(risultati,risQueryPrec,parametroJoin, tabellaDaUnire, jsonUtili);
+		System.out.println("RISULTATI: " + risultatiUniti);
+		return risultatiUniti; //devo ritornare il jsonArray
 		
 	}
 
-	
+	/**
+	 * La query con join restituisce varie collezioni di righe, quindi vari jsonArray, che dovrò concatenare 
+	 */
 	private JsonArray concatArray(JsonArray arr1, JsonArray arr2){
 	    JsonArray result = new JsonArray();
 	    for (int i = 0; i < arr1.size(); i++) {
@@ -145,9 +180,13 @@ public class CostruttoreQueryNeo4j {
 	    return result;
 	}
 	
+	/**Questo metodo serve ad eseguire la query Cypher direttamente, nel caso non contenga join
+	 * @param queryRiscritta
+	 * @param tabella
+	 */
 	private JsonArray eseguiQueryDirettamente(StringBuilder queryRiscritta) throws Exception{
 		GraphDao dao = new GraphDao();
-		Result risultatoResult = dao.interroga(queryRiscritta.toString());
+		StatementResult risultatoResult = dao.interroga(queryRiscritta.toString());
 		JsonArray risultati = Convertitore.convertCypherToJSON(risultatoResult);
 		dao.chiudiConnessione(); //ultra importante, altrimenti avrei due connessioni sulla stessa porta. Conseguenza: collisione e quindi exception
 		return risultati;

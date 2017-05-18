@@ -61,5 +61,8 @@ public class ClientNeo4jForPostgres {
 		
 		
 	}
+	public void close() throws Exception {
+	    connection.close();
+	}
 
 }

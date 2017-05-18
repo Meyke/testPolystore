@@ -1,4 +1,4 @@
-package coseUtili;
+package utility;
 
 import java.io.FileNotFoundException;
 import java.net.UnknownHostException;
@@ -13,11 +13,16 @@ import net.sf.jsqlparser.JSQLParserException;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-public class FabbricatoreMappaStatement {
+/**
+ * La classe permette di associare ogni condizioni scritta nella clausula WHERE alla rispettiva tabella da interrogare
+ * @author micheletedesco1
+ *
+ */
+public class FabbricatoreMappaCondizioni {
 	private Map<String, List<List<String>>> mappaWhere;
 	
 	
-	public FabbricatoreMappaStatement() {
+	public FabbricatoreMappaCondizioni() {
 		this.mappaWhere = new HashMap<>();
 	}
 

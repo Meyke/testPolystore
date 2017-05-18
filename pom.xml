@@ -8,14 +8,13 @@
 	<name>0Progetto Maven Webapp</name>
 	<url>http://maven.apache.org</url>
 	<dependencies>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
-			<scope>test</scope>
-		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.apache.tomcat.maven/tomcat7-maven-plugin -->
-		<dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+  <dependency>
 			<groupId>org.apache.tomcat.maven</groupId>
 			<artifactId>tomcat7-maven-plugin</artifactId>
 			<version>2.2</version>
@@ -60,6 +59,11 @@
     	<version>3.1.1</version>
     </dependency>
     <dependency>
+    <groupId>org.neo4j.driver</groupId>
+    <artifactId>neo4j-java-driver</artifactId>
+    <version>1.2.1</version>
+</dependency>
+    <dependency>
     <groupId>org.json</groupId>
     <artifactId>json</artifactId>
     <version>20090211</version>
@@ -79,8 +83,7 @@
 			<artifactId>amqp-client</artifactId>
 			<version>4.1.0</version>
 		</dependency>
-    
-	</dependencies>
+  </dependencies>
 	<build>
 		<finalName>0Progetto</finalName>
 	</build>

@@ -4,6 +4,8 @@ package mongo;
 import java.util.List;
 import java.util.Map;
 
+import utility.Convertitore;
+import utility.GestoreRisultato;
 import mongo.persistence.MongoDao;
 
 import com.google.gson.JsonArray;
@@ -12,16 +14,31 @@ import com.google.gson.JsonParser;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+
 // ricordarsi di aprire il server ./mongod
+/**
+ * La classe ha il compito di creare una query Mongo prendendo come spunto le informazioni sulla tabella di
+ * MongoDB (documento) da interrogare, le condizioni associate a quella tabella e i risultati di query precedenti
+ * @author micheletedesco1
+ *
+ */
 public class CostruttoreQueryMongo {
 
-	
-	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows) throws Exception {
+	/**
+	 * Il metodo serve a costruire la query Cypher.
+	 * @param myJson un oggetto json che contiene informazioni su quella tabella (prelevate da un file per ora)
+	 * @param risQueryPrec un jsonArray che contiene i risultati della query precedente (per fare i join)
+	 * @param mappaWhere una mappa con key = tabella e value = condizioni per quella tabella
+	 * @param tabellaKnows contiene informazioni sulla tabella di join (se presente)
+	 * @param jsonUtili contiene informazioni sulle tabelle interrogare
+	 */	
+	public JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows, Map<String, JsonObject> jsonUtili) throws Exception {
 		boolean richiestaJoin = false;
 		String parametroJoin = null;
 		String valueJoin = null;
 		JsonArray risultato = null;
 		String tabella = myJson.get("table").getAsString();
+		String tabellaDaUnire = null;
 		System.out.println(tabella);
 		List<List<String>> condizioniPerQuellaTabella = mappaWhere.get(tabella);
 		System.out.println(condizioniPerQuellaTabella.toString());
@@ -51,12 +68,13 @@ public class CostruttoreQueryMongo {
 				query.put(parametro, value);
 			}
 			else{
+				tabellaDaUnire = tabellaKnows.get("table").getAsString();
 				richiestaJoin = true; 
 				parametroJoin = condizione.get(0);
 				valueJoin = condizione.get(1);
 			}
 			if (richiestaJoin)
-				risultato = effettuaJoin(query, risQueryPrec, parametroJoin, valueJoin, tabella);
+				risultato = effettuaJoin(query, risQueryPrec, parametroJoin, valueJoin, tabella, tabellaDaUnire, jsonUtili);
 			else{
 				risultato = eseguiQueryDirettamente(query,tabella);
 				System.out.println(risultato.toString());
@@ -64,7 +82,12 @@ public class CostruttoreQueryMongo {
 		}
 		return risultato;
 	}
-
+	
+	
+	/**Questo metodo serve ad eseguire la query Mongo direttamente, nel caso non contenga join
+	 * @param queryRiscritta
+	 * @param tabella
+	 */
 	private JsonArray eseguiQueryDirettamente(DBObject queryRiscritta, String tabella) throws Exception { 
 		MongoDao dao = new MongoDao();
 		DBCursor cursor = dao.interroga(queryRiscritta,tabella);
@@ -77,10 +100,21 @@ public class CostruttoreQueryMongo {
 			JsonObject documentoInFormatoJson = parser.parse(documentoInFormatoStringa).getAsJsonObject();	
 			documenti.add(documentoInFormatoJson);
 		}
+		documenti = Convertitore.convertMongoToJSON(documenti, tabella);
 		return documenti;
 	}
-
-	private JsonArray effettuaJoin(DBObject query, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella) throws Exception {
+	
+	/**
+	 * Il metodo serve a effettuare il join, ovvero legare i risultati della query precedente alla query in corso di sviluppo
+	 * @param queryRiscritta
+	 * @param risQueryPrec un jsonArray che contiene i risultati della query precedente (per fare i join)
+	 * @param parametroJoin la foreign key della tabella attuale (es. customer.store_id)
+	 * @param valueJoin il valore della foreign key della tabella attuale (es. store.store_id)
+	 * @param tabella nome della tabella da interrogare
+	 * @param tabellaDaUnire nome della tabella eseguita in precedenza e da cui ho ottenuto i risultati
+	 */
+	private JsonArray effettuaJoin(DBObject query, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella, String tabellaDaUnire, Map<String, JsonObject> jsonUtili) throws Exception {
+		String fk = parametroJoin;
 		JsonObject elementoRisultatoPrecedente;
 		JsonArray risultati = new JsonArray();
 		
@@ -104,7 +138,8 @@ public class CostruttoreQueryMongo {
 			risultati = concatArray(risultati, risultatiParziali);
 			System.out.println(risultati.toString());
 		}
-		return risultati;
+		JsonArray risultatiUniti = GestoreRisultato.unisciColonne(risultati,risQueryPrec,fk, tabellaDaUnire, jsonUtili);
+		return risultatiUniti;
 	}		
 
 	private JsonArray concatArray(JsonArray arr1, JsonArray arr2){

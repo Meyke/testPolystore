@@ -8,6 +8,8 @@ import java.util.Set;
 
 
 
+
+
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -30,6 +32,7 @@ public class EsecutoreQueryMONGO {
 				tabelleDaEseguirePerPrima.add(entitaCheConosce.get(i).getAsJsonObject().get("table").getAsString());
 			}
 		}
+		System.out.println("TABELLE DA ESEGUIRE PER PRIMA: " +tabelleDaEseguirePerPrima.toString());
 		if (contatore <= 1){
 			System.out.println("eseguo in cascata "+ questoJson.get("table").getAsString());
 			return eseguiInCascata (questoJson, risQueryPrec, jsonUtili, mappaWhere);
@@ -136,12 +139,6 @@ public class EsecutoreQueryMONGO {
 		return nuovaMappaWhere;
 	}
 	
-	
-	
-	
-	
-	
-	
 	public JsonArray eseguiInCascata (JsonObject questoJson, JsonArray risQueryPrec, Map<String, JsonObject> jsonUtili, Map<String, List<List<String>>> mappaWhere) throws Exception{
 		JsonArray risultati = null;
 		JsonArray entitaCheConosce = questoJson.get("knows").getAsJsonArray();
@@ -150,21 +147,20 @@ public class EsecutoreQueryMONGO {
 			String fkTabellaCheConosce = entitaCheConosce.get(i).getAsJsonObject().get("foreignkey").getAsString();
 			JsonObject altroJson = jsonUtili.get(tabellaKnows.get("table").getAsString());
 			if (altroJson == null && i==entitaCheConosce.size()-1 && risultati==null){ //and mappawhere contiene la fk di questo json
-				System.out.println("a");
-				risultati = eseguiQuery(questoJson, null, mappaWhere, tabellaKnows);
+				risultati = eseguiQuery(questoJson, null, mappaWhere, tabellaKnows, jsonUtili);
 			}
 			else  if((altroJson != null) && (controlloFK(questoJson,fkTabellaCheConosce,mappaWhere)==true)){
-				System.out.println("b "+ altroJson.toString());
-				risultati = eseguiQuery(questoJson, eseguiAltraQuery(altroJson, risQueryPrec, jsonUtili, mappaWhere), mappaWhere, tabellaKnows);
-			}
+				risultati = eseguiQuery(questoJson, eseguiAltraQuery(altroJson, risQueryPrec, jsonUtili, mappaWhere), mappaWhere, tabellaKnows, jsonUtili);
+			}else if(((altroJson != null) && (controlloFK(questoJson,fkTabellaCheConosce,mappaWhere)==false)))
+				risultati = eseguiQuery(questoJson, null, mappaWhere, tabellaKnows, jsonUtili);
 		}
 		return risultati;
 
 	}
 	
-	private JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows) throws Exception {
+	private JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows, Map<String, JsonObject> jsonUtili) throws Exception {
 		CostruttoreQueryMongo costruttoreQuery = new CostruttoreQueryMongo();
-		return costruttoreQuery.eseguiQuery(myJson, risQueryPrec, mappaWhere,tabellaKnows);
+		return costruttoreQuery.eseguiQuery(myJson, risQueryPrec, mappaWhere,tabellaKnows, jsonUtili);
 	}
 
 	private JsonArray eseguiAltraQuery(JsonObject myJson,JsonArray risQueryPrec, Map<String, JsonObject> jsonUtili, Map<String, List<List<String>>> mappaWhere) throws Exception{
@@ -176,8 +172,10 @@ public class EsecutoreQueryMONGO {
 		if(myJson.get("database").getAsString().equals("neo4j")){
 			//chiedo i risultati al docker neo4j
 			JsonObject messaggioJson = creaJson(myJson, risQueryPrec, jsonUtili, mappaWhere);
-			risultati = new ClientMongoForNeo4j().callNeo4j(messaggioJson);
+			ClientMongoForNeo4j clientMongoForNeo4j = new ClientMongoForNeo4j();
+			risultati = clientMongoForNeo4j.callNeo4j(messaggioJson);
 			//ricordarsi (forse) di abbattere il clientPostgresForNeo4j. Altrimenti poi avrei diversi client. Per ora ok
+			clientMongoForNeo4j.close();
 		}
 		if(myJson.get("database").getAsString().equals("mongoDB")){
 			//rimango nel mio docker

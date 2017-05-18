@@ -21,14 +21,14 @@ import com.rabbitmq.client.*;
  *
  */
 @SuppressWarnings("deprecation")
-public class WorkFlowManager {
+public class Orchestrator {
 	private Connection connection;
     private Channel channel;
     private String requestQueueName;
     private String replyQueueName = "CODA_RISULTATI_FOR_WORKFLOW";
 	private QueueingConsumer consumer;
 
-	public WorkFlowManager() throws IOException, TimeoutException {
+	public Orchestrator() throws IOException, TimeoutException {
 		ConnectionFactory factory = new ConnectionFactory();
 		factory.setHost("localhost");
 		this.connection = factory.newConnection();
@@ -100,6 +100,9 @@ public class WorkFlowManager {
 		JsonParser parser = new JsonParser();
 		JsonArray risultati = parser.parse(response).getAsJsonArray();
 	    return risultati;
+	}
+	public void close() throws Exception {
+	    connection.close();
 	}
 
 

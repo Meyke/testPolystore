@@ -1,4 +1,4 @@
-package coseUtili;
+package utility;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,7 +19,8 @@ public class CaricatoreJSON {
 	}
 
 	public void caricaJSON(List<String> listaFrom) throws FileNotFoundException{
-		File fileJSON = new File("/Users/micheletedesco1/Desktop/fileJSON.txt");
+		ClassLoader classLoader = getClass().getClassLoader();
+		File fileJSON = new File(classLoader.getResource("fileJSON.txt").getFile());
 		Scanner scanner = new Scanner(fileJSON);
 		while (scanner.hasNextLine()) {
 			String line = scanner.nextLine();
@@ -46,7 +47,7 @@ public class CaricatoreJSON {
 		this.jsonCheMiServono = jsonCheMiServono;
 	}
 //svolto cosi per risolvere dei bug
-	public List<String> getTabellaPrioritaAlta(List<String> tabelle, Map<String, JsonObject> jsonUtili) {
+	public List<String> getTabellaPrioritaAlta(List<String> tabelle, Map<String, JsonObject> jsonUtili, Map<String, List<List<String>>> mappaWhere) {
 		//String tabellaPreferita = tabelle.get(0);
 		System.out.println(tabelle);
 		if (tabelle.size()==1)
@@ -64,7 +65,8 @@ public class CaricatoreJSON {
 				String tabella = tabelle.get(j);//customer
 				for (int y=0; y<knows.size();y++){
 					JsonObject tableKnows = knows.get(y).getAsJsonObject();//es store
-					if (tableKnows.get("table").getAsString().equals(tabella)){//vuol dire che la conosce
+					String fkTabellaCheConosce = tableKnows.get("foreignkey").getAsString();
+					if ((tableKnows.get("table").getAsString().equals(tabella))&&(controlloFK(oggetto,fkTabellaCheConosce,mappaWhere)==true)){//vuol dire che la conosce
 						String tabellaPreferita = oggetto.get("table").getAsString();
 						tabellePreferite.add(tabellaPreferita);		
 					}
@@ -73,6 +75,19 @@ public class CaricatoreJSON {
 		}	
 		System.out.println(tabellePreferite);
 		return tabellePreferite;
+	}
+
+	private boolean controlloFK(JsonObject oggetto, String fkTabellaCheConosce, Map<String, List<List<String>>> mappaWhere) {
+		boolean controllo = false;
+		List<List<String>> condizioniPerQuellaTabella = mappaWhere.get(oggetto.get("table").getAsString());
+		if (condizioniPerQuellaTabella.size()!=0){
+			for (List<String> condizioneIESIMA : condizioniPerQuellaTabella){
+				if(condizioneIESIMA.get(0).equals(fkTabellaCheConosce)){
+					controllo = true;
+				}
+			}
+		}
+		return controllo;
 	}
 
 	private boolean allEquals(List<String> tabelle) {

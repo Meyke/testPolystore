@@ -30,6 +30,7 @@ public class EsecutoreQueryNEO4J {
 				tabelleDaEseguirePerPrima.add(entitaCheConosce.get(i).getAsJsonObject().get("table").getAsString());
 			}
 		}
+		System.out.println("TABELLE DA ESEGUIRE PER PRIMA: " +tabelleDaEseguirePerPrima.toString());
 		if (contatore <= 1){
 			System.out.println("eseguo in cascata "+ questoJson.get("table").getAsString());
 			return eseguiInCascata (questoJson, risQueryPrec, jsonUtili, mappaWhere);
@@ -67,7 +68,6 @@ public class EsecutoreQueryNEO4J {
 			risultatiDaIntegrare.add(risultato);
 		}
 		String primaryKey = questoJson.get("primarykey").getAsString();
-		System.out.println("RISULTATI DA INTEGRARE: "+ risultatiDaIntegrare);
 		JsonArray risultato = unisciRisultatiParziali(risultatiDaIntegrare, primaryKey);
 
 		
@@ -150,22 +150,21 @@ public class EsecutoreQueryNEO4J {
 			JsonObject tabellaKnows = entitaCheConosce.get(i).getAsJsonObject();
 			String fkTabellaCheConosce = entitaCheConosce.get(i).getAsJsonObject().get("foreignkey").getAsString();
 			JsonObject altroJson = jsonUtili.get(tabellaKnows.get("table").getAsString());
-			if (altroJson == null && i==entitaCheConosce.size()-1 && risultati==null){  //and mappawhere contiene la fk di questo json
-				System.out.println("a");
-				risultati = eseguiQuery(questoJson, null, mappaWhere, tabellaKnows);
+			if (altroJson == null && i==entitaCheConosce.size()-1 && risultati==null){ //and mappawhere contiene la fk di questo json
+				risultati = eseguiQuery(questoJson, null, mappaWhere, tabellaKnows, jsonUtili);
 			}
 			else  if((altroJson != null) && (controlloFK(questoJson,fkTabellaCheConosce,mappaWhere)==true)){
-				System.out.println("b "+ altroJson.toString());
-				risultati = eseguiQuery(questoJson, eseguiAltraQuery(altroJson, risQueryPrec, jsonUtili, mappaWhere), mappaWhere, tabellaKnows);	
-			}
+				risultati = eseguiQuery(questoJson, eseguiAltraQuery(altroJson, risQueryPrec, jsonUtili, mappaWhere), mappaWhere, tabellaKnows, jsonUtili);
+			}else if(((altroJson != null) && (controlloFK(questoJson,fkTabellaCheConosce,mappaWhere)==false)))
+				risultati = eseguiQuery(questoJson, null, mappaWhere, tabellaKnows, jsonUtili);
 		}
 		return risultati;
 
 	}
 	
-	private JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows) throws Exception {
+	private JsonArray eseguiQuery(JsonObject myJson, JsonArray risQueryPrec, Map<String, List<List<String>>> mappaWhere, JsonObject tabellaKnows, Map<String, JsonObject> jsonUtili) throws Exception {
 		CostruttoreQueryNeo4j costruttoreQuery = new CostruttoreQueryNeo4j();
-		return costruttoreQuery.eseguiQuery(myJson, risQueryPrec, mappaWhere,tabellaKnows);
+		return costruttoreQuery.eseguiQuery(myJson, risQueryPrec, mappaWhere,tabellaKnows, jsonUtili);
 	}
 
 	private JsonArray eseguiAltraQuery(JsonObject myJson,JsonArray risQueryPrec, Map<String, JsonObject> jsonUtili, Map<String, List<List<String>>> mappaWhere) throws Exception{
@@ -174,8 +173,9 @@ public class EsecutoreQueryNEO4J {
 		if(myJson.get("database").getAsString().equals("postgreSQL")){
 			//chiedo risultati al docker postgres
 			JsonObject messaggioJson = creaJson(myJson, risQueryPrec, jsonUtili, mappaWhere);
-			risultati = new ClientNeo4jForPostgres().callPostgres(messaggioJson);
-			
+			ClientNeo4jForPostgres clientNeo4jForPostgres = new ClientNeo4jForPostgres();
+			risultati = clientNeo4jForPostgres.callPostgres(messaggioJson);
+			clientNeo4jForPostgres.close();
 		}
 		if(myJson.get("database").getAsString().equals("neo4j")){
 			EsecutoreQueryNEO4J esecutoreQuery = new EsecutoreQueryNEO4J();
@@ -184,7 +184,9 @@ public class EsecutoreQueryNEO4J {
 		if(myJson.get("database").getAsString().equals("mongoDB")){
 			//chiedo risultati al docker mongo
 			JsonObject messaggioJson = creaJson(myJson, risQueryPrec, jsonUtili, mappaWhere);
-			risultati = new ClientNeo4jForMongo().callMongo(messaggioJson);
+			ClientNeo4jForMongo clientNeo4jForMongo = new ClientNeo4jForMongo();
+			risultati = clientNeo4jForMongo.callMongo(messaggioJson);
+			clientNeo4jForMongo.close();
 		}
 		return risultati;
 		

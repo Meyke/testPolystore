@@ -61,6 +61,9 @@ public class ClientNeo4jForMongo {
 		
 		
 	}
+	public void close() throws Exception {
+	    connection.close();
+	}
 
 
 	

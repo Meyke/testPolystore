@@ -1,26 +1,34 @@
 package postgres.persistence;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.*;
+import java.util.Properties;
 
-
-//bisogna mettere anche qui il logger 
 public class DataSource {
 	
-	
-	private String dbURI = "jdbc:postgresql://localhost/CustomerData";
-	private String userName = "postgres";
-	private String password = "rasenshuriken";
+	static final private String properties = "postgres.properties";
+
+
 
 	public Connection getConnection() throws PersistenceException {
-		Connection connection = null;
-		try {
-		    Class.forName("org.postgresql.Driver");
-		    connection = DriverManager.getConnection(dbURI,userName, password);
-		} catch (ClassNotFoundException e) {
-			throw new PersistenceException(e.getMessage());
-		} catch(SQLException e) {
-			throw new PersistenceException(e.getMessage());
-		}
-		return connection;
+		Connection connection;
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        Properties props = new Properties();
+        try (InputStream resourceStream = loader.getResourceAsStream(properties)) {
+            props.load(resourceStream);
+
+            // load the Driver Class
+            Class.forName(props.getProperty("DB_DRIVER_CLASS"));
+
+            // create the connection now
+            connection = DriverManager.getConnection(props.getProperty("DB_URL"),
+                    props.getProperty("DB_USERNAME"),
+                    props.getProperty("DB_PASSWORD"));
+        } catch (IOException | ClassNotFoundException | SQLException e) {
+
+            throw new PersistenceException(e.getMessage());
+        }
+        return connection;
 	}
 }

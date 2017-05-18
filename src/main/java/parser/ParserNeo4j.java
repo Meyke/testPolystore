@@ -13,20 +13,23 @@ import com.google.gson.JsonParser;
 
 
 /**
- * è il parser per query cypher. Non riuscivo a trovarne uno decente per java
+ * Parser Cypher. Data la query scritta in Cypher, la scansiona (guardando le parole chiave, es: RETURN, MATCH) e permette di ottenere
+ * l'insieme delle tabelle, l'insieme delle proiezioni, e l'insieme delle condizioni
+ * @author micheletedesco1
  *
  */
-//controllare i casi in cui manca la where e da aggiustare con spazi. vedi spezzatore query
+
 public class ParserNeo4j {
 	private List<String> listaProiezioni;
 	private List<String> tableList;
 	private List<List<String>> matriceWhere;
-	
-	
+
+
 	public void spezza(String cypherQuery) throws JSQLParserException, FileNotFoundException{	
 		//creo la lista from
 		this.tableList = new LinkedList<>(); 
-		File fileJSON = new File("/Users/micheletedesco1/Desktop/fileJSON.txt");
+		ClassLoader classLoader = getClass().getClassLoader();
+		File fileJSON = new File(classLoader.getResource("fileJSON.txt").getFile());
 		Scanner scanner = new Scanner(fileJSON);
 		//{'table' : 'persona', 'database' : 'postgerSQL', 'members':['persona.id', 'persona.nome', 'persona.scuola'] 'query' : 'SELECT * FROM persona WHERE 1=1'}
 		//{'table' : 'scuola', 'database' : 'mongoDB', 'members':['scuola.id', 'scuola.nome'] }
@@ -41,7 +44,7 @@ public class ParserNeo4j {
 
 		scanner.close();
 		System.out.println(tableList.toString());
-		
+
 		String[] parti2 = null;
 		//creo la listaWhere
 		this.matriceWhere = new LinkedList<>();
@@ -52,7 +55,20 @@ public class ParserNeo4j {
 			String oggettoStringaWhere = parti2[0];
 			String[] oggettiStatement = oggettoStringaWhere.split(" AND ");
 			for (int i=0; i<oggettiStatement.length; i++){
-				String[] oggettiStatementSeparati = oggettiStatement[i].split("=");
+				String[] oggettiStatementSeparati = null;
+				String operation = null;
+				if(oggettiStatement[i].contains("=")){
+					oggettiStatementSeparati = oggettiStatement[i].split("=");
+					operation = "=";
+				}
+				else if (oggettiStatement[i].contains("<")){
+					oggettiStatementSeparati = oggettiStatement[i].split("<");
+					operation = "<";
+				}
+				else {
+					oggettiStatementSeparati = oggettiStatement[i].split(">");
+					operation = ">";		
+				}	
 				List<String> rigaMatrice = new LinkedList<>();
 				rigaMatrice.add(oggettiStatementSeparati[0].replaceAll("\\s+","")); //st = st.replaceAll("\\s+","")
 				oggettiStatementSeparati[1] = oggettiStatementSeparati[1].replaceFirst("\\s+","");
@@ -61,6 +77,7 @@ public class ParserNeo4j {
 				}
 
 				rigaMatrice.add(oggettiStatementSeparati[1]);
+				rigaMatrice.add(operation);
 				this.matriceWhere.add(rigaMatrice);			 		
 			}
 		}
@@ -75,18 +92,19 @@ public class ParserNeo4j {
 		String oggettoStringaReturn = parti2[1];
 		String[] partiReturn = oggettoStringaReturn.split("\\,");
 		for (int i=0; i<partiReturn.length; i++){
-			this.listaProiezioni.add(partiReturn[i]);
+			String elemento = partiReturn[i].replaceAll("\\s+","");
+			this.listaProiezioni.add(elemento);
 		}
 	} 
-        
-		
-		
-		
-		
-		
-		
-		
-	
+
+
+
+
+
+
+
+
+
 
 	public List<String> getListaProiezioni() {
 		return listaProiezioni;
@@ -111,14 +129,14 @@ public class ParserNeo4j {
 	public void setMatriceWhere(List<List<String>> matriceWhere) {
 		this.matriceWhere = matriceWhere;
 	}
-	
-	/*public static void main(String[] args) throws FileNotFoundException, JSQLParserException {
+
+	public static void main(String[] args) throws FileNotFoundException, JSQLParserException {
 		String cypherQuery ="MATCH (persona:persona), (scuola:scuola) WHERE persona.scuola=scuola.id AND scuola.nome='caffe' RETURN persona.name";
 		ParserNeo4j parserNeo4j = new ParserNeo4j();
 		parserNeo4j.spezza(cypherQuery);
 		System.out.println("lista proiezioni----->" + parserNeo4j.getListaProiezioni().toString());
 		System.out.println("lista tabelle----->" + parserNeo4j.getTableList().toString());
 		System.out.println("lista clausule where [attributo valore]---->" + parserNeo4j.getMatriceWhere().toString());
-	}*/
+	}
 }
 

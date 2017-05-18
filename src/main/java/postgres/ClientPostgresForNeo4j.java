@@ -1,7 +1,6 @@
 package postgres;
 
 import java.io.IOException;
-
 import java.io.UnsupportedEncodingException;
 import java.util.concurrent.TimeoutException;
 
@@ -60,6 +59,9 @@ public class ClientPostgresForNeo4j {
 	    return risultati;
 		
 		
+	}
+	public void close() throws Exception {
+	    connection.close();
 	}
 	
 	
