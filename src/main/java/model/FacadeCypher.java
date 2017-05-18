@@ -34,7 +34,7 @@ public class FacadeCypher {
 		FabbricatoreMappaCondizioni fabbricatoreCondizione = new FabbricatoreMappaCondizioni();
 		fabbricatoreCondizione.creaMappaWhere(matriceWhere, jsonUtili);
 		Map<String, List<List<String>>> mappaWhere = fabbricatoreCondizione.getMappaWhere();
-		
+		System.out.println("MAPPA CONDIZIONI tabella - condizioni su quella tabella  \n" + mappaWhere);
 		List<String> tabellePriorità = caricatoreDAFile.getTabellaPrioritaAlta(tabelle, jsonUtili, mappaWhere);
 		while(tabellePriorità.size()>1){
 			tabellePriorità = caricatoreDAFile.getTabellaPrioritaAlta(tabellePriorità, jsonUtili, mappaWhere);
@@ -43,19 +43,20 @@ public class FacadeCypher {
 		
 		JsonObject questoJson = jsonUtili.get(tabellaPrioritàAlta);
 		jsonUtili = modificaJsonUtili(jsonUtili, mappaWhere);
+		System.out.println("INSIEME DI PROIEZIONI: "+parser.getListaProiezioni());
+		System.out.println("JSON CONTENENTI INFORMAZIONI SULLE TABELLE DA INTERROGARE: \n "+jsonUtili.toString());
 		Orchestrator gestoreQuerySql = new Orchestrator();
 		JsonArray risultato = gestoreQuerySql.esegui(questoJson, null, jsonUtili, mappaWhere);
-		System.out.println("lista proiezioni: "+parser.getListaProiezioni());
-		System.out.println("jsonUtili: "+jsonUtili.toString());
-		System.out.println("mappaWhere: "+mappaWhere.toString());
-		System.out.println("RISULTATI: "+ risultato.toString());
 		risultato = GestoreRisultato.proietta(parser.getListaProiezioni(),risultato, jsonUtili);
 		return risultato;
 		
 	}
 	
+	/*
+	 * codice copia e incolla di facadeSQL. Ottimizzarlo spostando il metodo in una classe dedicata (quando ho tempo)
+	 */
 	private Map<String, JsonObject> modificaJsonUtili(Map<String, JsonObject> jsonUtili, Map<String, List<List<String>>> mappaWhere) {
-		System.out.println(jsonUtili.toString());
+		//System.out.println(jsonUtili.toString());
 		Map<String, JsonObject> jsonUtiliModificati = new HashMap<>();
 		Set<String> tabelle = jsonUtili.keySet();
 		for (String t : tabelle){
@@ -66,8 +67,8 @@ public class FacadeCypher {
 				JsonObject tabellaKnows = entitaCheConosce.get(i).getAsJsonObject();
 				String fkTabellaCheConosce = entitaCheConosce.get(i).getAsJsonObject().get("foreignkey").getAsString();
 				JsonObject altroJson = jsonUtili.get(tabellaKnows.get("table").getAsString());
-				System.out.println("TABELLA CHE CONOSCE: " +tabellaKnows.get("table").getAsString());
-				System.out.println("ALTROJSON: "+ (altroJson == null));
+				//System.out.println("TABELLA CHE CONOSCE: " +tabellaKnows.get("table").getAsString());
+				//System.out.println("ALTROJSON: "+ (altroJson == null));
 				if(((altroJson != null) && (GestoreRisultato.controlloFK(questoJson,fkTabellaCheConosce,mappaWhere)==true))){
 					entitaCheConosceModificate.add(tabellaKnows);
 				}
@@ -80,7 +81,7 @@ public class FacadeCypher {
 			questoJson.add("knows", entitaCheConosceModificate);
 			jsonUtiliModificati.put(t, questoJson);		
 		}
-		System.out.println(jsonUtiliModificati.toString());
+		//System.out.println(jsonUtiliModificati.toString());
 		return jsonUtiliModificati;
 	}
 

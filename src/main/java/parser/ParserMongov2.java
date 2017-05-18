@@ -80,9 +80,12 @@ public class ParserMongov2 {
 				elemento = "'"+elemento+"'";
 			}
 			condizione.set(1, elemento);
-		nuovaMatriceWhere.add(condizione);
+			nuovaMatriceWhere.add(condizione);
 		}
 		matriceWhere = nuovaMatriceWhere;
+		for (List<String> condizione : this.matriceWhere){
+			condizione.add("=");
+		}
 		return matriceWhere;
 	}
 
@@ -106,7 +109,7 @@ public class ParserMongov2 {
 		}
 
 		aggiornamentoTabelleECondizioni(this.matriceWhere, this.tabelle.get(0), myJson);	
-		
+
 
 	}
 
@@ -115,12 +118,12 @@ public class ParserMongov2 {
 		for(Map.Entry<String,JsonElement> entry : entrySet){
 			this.listaProiezioni.add(entry.getKey());
 		}
-		
+
 	}
 
 
 	private void aggiornamentoTabelleECondizioni(List<List<String>> matriceWhere, String tabella, JsonObject myJson) throws FileNotFoundException {
-	
+
 		//trasformo il jsonObject in una mappa
 		Map<String, Object> attributes = new HashMap<String, Object>();
 		Set<Entry<String, JsonElement>> entrySet = myJson.entrySet();
@@ -135,17 +138,17 @@ public class ParserMongov2 {
 			this.matriceWhere.add(rigaMatrice);	
 		}
 
-		System.out.println("OGGETTO DA STUDIARE: " +myJson);
+		//System.out.println("OGGETTO DA STUDIARE: " +myJson);
 		//serve solo per il metodo di dopo (caricaJSON di caricatore) e non caricare tutti i json
 		List<String> tabelleAppoggio = new LinkedList<>();
 		tabelleAppoggio.add(tabella);
 		JsonObject nuovoJson = null;
-		System.out.println(tabella);
+		//System.out.println(tabella);
 		CaricatoreJSON caricatoreDaFile = new CaricatoreJSON();
 		caricatoreDaFile.caricaJSON(tabelleAppoggio);//carico da file i json utili in base alle tabelle
 		Map<String, JsonObject> jsonUtili = caricatoreDaFile.getJsonCheMiServono();
 		JsonObject tabellaInformazioni = jsonUtili.get(tabella);
-		System.out.println(jsonUtili.toString());
+		//System.out.println(jsonUtili.toString());
 		JsonArray tabelleCheConosce = tabellaInformazioni.get("knows").getAsJsonArray();
 		for (int i=0; i<tabelleCheConosce.size();i++){
 			String tabellaCheConosce = tabelleCheConosce.get(i).getAsJsonObject().get("table").getAsString();
@@ -153,11 +156,11 @@ public class ParserMongov2 {
 			List<List<String>> matriceWhereCopia = new LinkedList<>(matriceWhere);
 			for(List<String> condizione : matriceWhereCopia){
 				List<String> nuovaCondizione = new LinkedList<>();
-				System.out.println("TABELLA CHE CONOSCE: "+tabellaCheConosce);
-				System.out.println("CONDIZIONE: "+condizione.get(0));
+				//System.out.println("TABELLA CHE CONOSCE: "+tabellaCheConosce);
+				//System.out.println("CONDIZIONE: "+condizione.get(0));
 				if((condizione.get(0).equals(tabellaCheConosce)) && myJson.get(tabellaCheConosce)!=null){ //se ho dei join, saranno espressi in mongo come jsonObject
 					rimuoviElemento(tabellaCheConosce, this.matriceWhere);
-					System.out.println("MYJSON: " + myJson.toString());
+					//System.out.println("MYJSON: " + myJson.toString());
 					nuovoJson = myJson.get(tabellaCheConosce).getAsJsonObject();
 					this.tabelle.add(tabellaCheConosce);
 					caricatoreDaFile.caricaJSON(this.tabelle);
@@ -212,12 +215,12 @@ public class ParserMongov2 {
 		//String queryMongo ="db.customer.find({customer.first_name:'michele', customer.last_name:'tedesco', address:{address.nome:'via sala'}})"; //OK 
 		//String queryMongo ="db.customer.find({customer.first_name:'michele', customer.last_name:'tedesco'})"; //OK
 		//String queryMongo ="db.customer.find({customer.first_name:'michele', customer.last_name:'tedesco', address:{city:{city.city_id:1}}})"; //OK
-		
+
 		String queryMongo ="db.customer.find({customer.first_name:'michele', customer.last_name:'tedesco', address:{address.nome:'via sala'}, store:{store.store_id:1}})"; //OK 
 		//db.actor.find({first_name:'Arnold'},{first_name:true,_id:false})
 		//String queryMongo ="db.customer.find({},{customer.first_name:true})"; //OK 
 		//String queryMongo ="db.customer.find({})";
-				
+
 		ParserMongov2 parserMongo = new ParserMongov2();
 		parserMongo.spezza(queryMongo);
 		System.out.println("lista tabelle: " + parserMongo.getListaFrom().toString());

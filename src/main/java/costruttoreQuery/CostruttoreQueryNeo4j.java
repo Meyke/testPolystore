@@ -8,7 +8,6 @@ import neo4j.GraphDao;
 
 import org.neo4j.driver.v1.StatementResult;
 
-
 import utility.Convertitore;
 import utility.GestoreRisultato;
 
@@ -38,28 +37,28 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 		JsonArray risultato = null;
 		String tabella = myJson.get("table").getAsString();
 		String tabellaDaUnire = null;
-		System.out.println("eseguo: "+tabella);
+		System.out.println("DEVO ESEGUIRE LA TABELLA: " + tabella);
 		String queryBase = "MATCH ("+ tabella + ":" + tabella +")" + " WHERE 1=1";
 		List<List<String>> condizioniPerQuellaTabella = mappaWhere.get(tabella);
-		System.out.println(condizioniPerQuellaTabella.toString());
+		System.out.println("CONDIZIONI PER QUELLA TABELLA: " + condizioniPerQuellaTabella.toString());
 		
 		
 		StringBuilder queryRiscritta = new StringBuilder();
-		System.out.println("query base: " + queryBase);
+		System.out.println("QUERY BASE: " + queryBase);
 		queryRiscritta.append(queryBase);
-		System.out.println(condizioniPerQuellaTabella.size());
+		//System.out.println(condizioniPerQuellaTabella.size());
 		//adesso devo effettuare un controllo su ogni riga della matrice e poi costruire la query
 		for (int i=0; i<condizioniPerQuellaTabella.size();i++){ //potevo usare un for each
 			List<String> condizione = condizioniPerQuellaTabella.get(i);
 			//effettuo un controllo per vedere se quella è una riga di join o meno
 			
-			System.out.println("CONDIZIONE: "+condizione.get(0));
+			//System.out.println("CONDIZIONE: "+condizione.get(0));
 			//System.out.println(myJson.get("foreignkey").getAsString());
 			if (!condizione.get(0).equals(tabellaKnows.get("foreignkey").getAsString())){ //da aggiungere<----------------
 				//se non è una condizione di join, la appendo direttamente alla query riscritta
-				String sottoStringa = " AND " + condizione.get(0) + " = " + condizione.get(1);
+				String sottoStringa = " AND " + condizione.get(0) + " " + condizione.get(2) + " " + condizione.get(1);
 				queryRiscritta.append(sottoStringa);
-				System.out.println(queryRiscritta.toString());
+				System.out.println("QUERY RISCRITTA: " + queryRiscritta.toString());
 			}
 			else{
 				//altrimenti è richiesto un join. Setto a true la variabile richiestaJoin. Generalizzare se più join 
@@ -81,9 +80,9 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 					else membriReturn.append(membro + ", ");
 				}
 				queryRiscritta.append(" RETURN " + membriReturn);// per ritornare tutti i campi della tabella neo4j
-				System.out.println(queryRiscritta.toString());
+				System.out.println("QUERY: " +queryRiscritta.toString());
 				risultato = eseguiQueryDirettamente(queryRiscritta);
-				System.out.println(risultato.toString());
+				System.out.println("RISULTATO: " + risultato.toString());
 			}
 			
 			
@@ -99,9 +98,10 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 				else membriReturn.append(membro + ", ");
 			}
 			queryRiscritta.append(" RETURN " + membriReturn);// per ritornare tutti i campi della tabella neo4j
-			System.out.println(queryRiscritta);
+			System.out.println("QUERY: " + queryRiscritta);
 			risultato = eseguiQueryDirettamente(queryRiscritta);
 		}
+		System.out.println("RISULTATO TEMPORANEO: " + risultato.toString());
 		return risultato;
 	}
 	
@@ -115,6 +115,12 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 	 * @param tabellaDaUnire nome della tabella eseguita in precedenza e da cui ho ottenuto i risultati
 	 */
 	private JsonArray effettuaJoin(StringBuilder queryRiscritta, JsonArray risQueryPrec, String parametroJoin, String valueJoin, String tabella, JsonObject myJson, String tabellaDaUnire, Map<String, JsonObject> jsonUtili) throws Exception{
+		String query = queryRiscritta.toString();
+		if (query.contains("RETURN")){
+			query = query.split("RETURN")[0];
+			queryRiscritta = new StringBuilder(query);
+		}
+		
 		GraphDao dao = new GraphDao();
 		JsonObject elementoRisultatoPrecedente;
 		StringBuilder queryTemporanea;
@@ -123,7 +129,7 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 		//effettuo il join un risultato per volta
 		for (int i=0; i<risQueryPrec.size(); i++){
 			elementoRisultatoPrecedente = risQueryPrec.get(i).getAsJsonObject();//dovrei ottenere un jsonObject
-			System.out.println(elementoRisultatoPrecedente.toString());
+			System.out.println("ELEMENTO " + i + " RISULTATO PRECEDENTE: " + elementoRisultatoPrecedente.toString());
 			queryTemporanea = new StringBuilder().append(queryRiscritta);
 			StringBuilder membriReturn = new StringBuilder();
 			//per ritornare tutti i membri (colonne) di quella tabella
@@ -145,7 +151,7 @@ public class CostruttoreQueryNeo4j implements CostruttoreQuery {
 			queryTemporanea.append(sottoStringa);
 			
 			//eseguo la stringa passandola al client rpc---- da fare
-			System.out.println(queryTemporanea.toString());
+			System.out.println("QUERY INVIATA: " + queryTemporanea.toString());
 			StatementResult rigaRisultato = dao.interroga(queryTemporanea.toString());
 			JsonArray risultatiParziali = Convertitore.convertCypherToJSON(rigaRisultato);
 			risultati = concatArray(risultati, risultatiParziali);

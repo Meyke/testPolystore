@@ -33,28 +33,27 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 		JsonArray risultato = null;
 		String tabella = myJson.get("table").getAsString();
 		String tabellaDaUnire = null;
-		System.out.println(tabella);
+		System.out.println("DEVO ESEGUIRE LA TABELLA: " + tabella);
 		String queryBase = "SELECT * FROM "+ tabella + " WHERE 1=1";
 		List<List<String>> condizioniPerQuellaTabella = mappaWhere.get(tabella);
-		System.out.println(condizioniPerQuellaTabella.toString());
+		System.out.println("CONDIZIONI PER QUELLA TABELLA: " + condizioniPerQuellaTabella.toString());
 		
 		
 		StringBuilder queryRiscritta = new StringBuilder();
-		System.out.println("query base: " + queryBase);
+		System.out.println("QUERY BASE: " + queryBase);
 		queryRiscritta.append(queryBase);
-		System.out.println(condizioniPerQuellaTabella.size());
 		//adesso devo effettuare un controllo su ogni riga della matrice e poi costruire la query
 		for (int i=0; i<condizioniPerQuellaTabella.size();i++){ //potevo usare un for each
 			List<String> condizione = condizioniPerQuellaTabella.get(i);
 			//effettuo un controllo per vedere se quella è una riga di join o meno
 			
-			System.out.println(condizione.get(0));
+			//System.out.println(condizione.get(0));
 			//System.out.println(tabellaKnows.get("foreignkey").getAsString());
 			if (!condizione.get(0).equals(tabellaKnows.get("foreignkey").getAsString())){ //da aggiungere<----------------
 				//se non è una condizione di join, la appendo direttamente alla query riscritta
-				String sottoStringa = " AND " + condizione.get(0) + " = " + condizione.get(1);
+				String sottoStringa = " AND " + condizione.get(0) + " " + condizione.get(2) + " " + condizione.get(1);
 				queryRiscritta.append(sottoStringa);
-				System.out.println(queryRiscritta.toString());
+				System.out.println("QUERY RISCRITTA: " + queryRiscritta.toString());
 			}
 			else{
 				//altrimenti è richiesto un join. Setto a true la variabile richiestaJoin. Generalizzare se più join 
@@ -67,13 +66,14 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 				risultato = effettuaJoin(queryRiscritta, risQueryPrec, parametroJoin, valueJoin, tabella, tabellaDaUnire, jsonUtili);
 			else{
 				risultato = eseguiQueryDirettamente(queryRiscritta, tabella);
-				System.out.println(risultato.toString());
+				//System.out.println(risultato.toString());
 			}
 			
 		}		
 		if (condizioniPerQuellaTabella.size() == 0){
 			risultato = eseguiQueryDirettamente(queryRiscritta, tabella);
 		}
+		System.out.println("RISULTATO TEMPORANEO: " + risultato.toString());
 		return risultato;
 	}
 	
@@ -92,10 +92,11 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 		StringBuilder queryTemporanea;
 		String sottoStringa;
 		JsonArray risultati = new JsonArray();
-		System.out.println("valore join" + valueJoin);
+		//System.out.println("valore join" + valueJoin);
 		//effettuo il join un risultato per volta
 		for (int i=0; i<risQueryPrec.size(); i++){
 			elementoRisultatoPrecedente = risQueryPrec.get(i).getAsJsonObject();//dovrei ottenere un jsonObject
+			System.out.println("ELEMENTO " + i + " RISULTATO PRECEDENTE: " + elementoRisultatoPrecedente.toString());
 			queryTemporanea = new StringBuilder().append(queryRiscritta);
 			if(elementoRisultatoPrecedente.get(valueJoin)==null){
 				String id =valueJoin.split("\\.")[1];
@@ -105,11 +106,11 @@ public class CostruttoreQuerySQL implements CostruttoreQuery{
 				sottoStringa = " AND " + parametroJoin + " = " + elementoRisultatoPrecedente.get(valueJoin).getAsString();
 			queryTemporanea.append(sottoStringa);
 			//eseguo la stringa passandola al client rpc
-			System.out.println(queryTemporanea.toString());
+			System.out.println("QUERY INVIATA: " + queryTemporanea.toString());
 			ResultSet rigaRisultato = dao.interroga(queryTemporanea.toString());
 			JsonArray risultatiParziali = Convertitore.convertSQLToJSON(rigaRisultato, tabella);
 			risultati = concatArray(risultati, risultatiParziali);
-			System.out.println(risultati.toString());
+			//System.out.println(risultati.toString());
 			//concateno i vari jsonArray
 		}
 		

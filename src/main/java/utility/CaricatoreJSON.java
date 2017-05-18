@@ -12,6 +12,14 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 //testato e funzionante attenzione alle virgolette, che cambiano nel file
+
+/**
+ * Questa classe ha il compito di prelevare le informazioni sulle tabelle da interrogare da qualche parte.
+ * Allo scopo e' stato utilizzato un file di testo contenente queste informazioni come stringhe con sintassi json,
+ * in modo poi da poter facilmente convertire in jsonObject veri e propri.
+ * @author micheletedesco1
+ *
+ */
 public class CaricatoreJSON {
 	private Map<String,JsonObject> jsonCheMiServono;
 	public CaricatoreJSON() {
@@ -46,10 +54,18 @@ public class CaricatoreJSON {
 	public void setJsonCheMiServono(Map<String, JsonObject> jsonCheMiServono) {
 		this.jsonCheMiServono = jsonCheMiServono;
 	}
-//svolto cosi per risolvere dei bug
+
+	
+	/**
+	 * La tabella con priorita' piu' alta coincide con la root table dell'albero da interrogare
+	 * @param tabelle
+	 * @param jsonUtili
+	 * @param mappaWhere
+	 * @return
+	 */
 	public List<String> getTabellaPrioritaAlta(List<String> tabelle, Map<String, JsonObject> jsonUtili, Map<String, List<List<String>>> mappaWhere) {
 		//String tabellaPreferita = tabelle.get(0);
-		System.out.println(tabelle);
+		//System.out.println(tabelle);
 		if (tabelle.size()==1)
 			return tabelle;
 		List<String> tabellePreferite = new LinkedList<>();
@@ -73,7 +89,7 @@ public class CaricatoreJSON {
 				}
 			}
 		}	
-		System.out.println(tabellePreferite);
+		//System.out.println(tabellePreferite);
 		return tabellePreferite;
 	}
 

@@ -22,45 +22,60 @@ public class ParserSql {
 	private List<String> tableList;
 	private List<String> listaProiezioni;
 	private List<List<String>> matriceWhere;
-	
+
 	public void spezza(String querySQL) throws JSQLParserException{
-		
+
 		//utilizzo il parser jsql
-    	CCJSqlParserManager parserManager = new CCJSqlParserManager();
-    	Select select = (Select) parserManager.parse(new StringReader(querySQL));
-    	PlainSelect ps = (PlainSelect) select.getSelectBody();
-    	
-    	
-    	//creo la listaFROM
-    	TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
-    	this.tableList = tablesNamesFinder.getTableList(select);
-    	
-    	//creo la listaSELECT
-    	List<SelectItem> listaSelectItems = ps.getSelectItems();
-    	this.listaProiezioni = new LinkedList<>();
-    	for (SelectItem elemento : listaSelectItems){
-    		String elementoStringato = elemento.toString();
-    		this.listaProiezioni.add(elementoStringato);
-    	}
-    	
-    	//creo la matriceWHERE
-    	this.matriceWhere = new LinkedList<>();
-    	Expression oggettoWhere = ps.getWhere();
-    	if (oggettoWhere != null){
-    		String oggettoStringaWhere = ps.getWhere().toString();
-    		String[] oggettiStatement = oggettoStringaWhere.split("AND");
-    		for (int i=0; i<oggettiStatement.length; i++){
-    			String[] oggettiStatementSeparati = oggettiStatement[i].split("=");
-    			List<String> rigaMatrice = new LinkedList<>();
-    			rigaMatrice.add(oggettiStatementSeparati[0].replaceAll("\\s+","")); //st = st.replaceAll("\\s+","")
-    			oggettiStatementSeparati[1] = oggettiStatementSeparati[1].replaceFirst("\\s+","");
-    			if (oggettiStatementSeparati[1].endsWith(" ")){
-    				oggettiStatementSeparati[1] = oggettiStatementSeparati[1].substring(0,oggettiStatementSeparati[1].length() - 1);
-    				}
-    			rigaMatrice.add(oggettiStatementSeparati[1]);
-    			this.matriceWhere.add(rigaMatrice);			 		
-    		} 
-    	}
+		CCJSqlParserManager parserManager = new CCJSqlParserManager();
+		Select select = (Select) parserManager.parse(new StringReader(querySQL));
+		PlainSelect ps = (PlainSelect) select.getSelectBody();
+
+
+		//creo la listaFROM
+		TablesNamesFinder tablesNamesFinder = new TablesNamesFinder();
+		this.tableList = tablesNamesFinder.getTableList(select);
+
+		//creo la listaSELECT
+		List<SelectItem> listaSelectItems = ps.getSelectItems();
+		this.listaProiezioni = new LinkedList<>();
+		for (SelectItem elemento : listaSelectItems){
+			String elementoStringato = elemento.toString();
+			this.listaProiezioni.add(elementoStringato);
+		}
+
+		//creo la matriceWHERE
+		this.matriceWhere = new LinkedList<>();
+		Expression oggettoWhere = ps.getWhere();
+		if (oggettoWhere != null){
+			String oggettoStringaWhere = ps.getWhere().toString();
+			String[] oggettiStatement = oggettoStringaWhere.split("AND");
+			for (int i=0; i<oggettiStatement.length; i++){
+				String[] oggettiStatementSeparati = null;
+				String operation = null;
+				if(oggettiStatement[i].contains("=")){
+					oggettiStatementSeparati = oggettiStatement[i].split("=");
+					operation = "=";
+				}
+				else if (oggettiStatement[i].contains("<")){
+					oggettiStatementSeparati = oggettiStatement[i].split("<");
+					operation = "<";
+				}
+				else {
+					oggettiStatementSeparati = oggettiStatement[i].split(">");
+				    operation = ">";		
+				}	
+
+				List<String> rigaMatrice = new LinkedList<>();
+				rigaMatrice.add(oggettiStatementSeparati[0].replaceAll("\\s+","")); //st = st.replaceAll("\\s+","")
+				oggettiStatementSeparati[1] = oggettiStatementSeparati[1].replaceFirst("\\s+","");
+				if (oggettiStatementSeparati[1].endsWith(" ")){
+					oggettiStatementSeparati[1] = oggettiStatementSeparati[1].substring(0,oggettiStatementSeparati[1].length() - 1);
+				}
+				rigaMatrice.add(oggettiStatementSeparati[1]);
+				rigaMatrice.add(operation);
+				this.matriceWhere.add(rigaMatrice);			 		
+			} 
+		}
 	}
 
 	public List<String> getTableList() {
@@ -86,12 +101,15 @@ public class ParserSql {
 	public void setMatriceWhere(List<List<String>> matriceWhere) {
 		this.matriceWhere = matriceWhere;
 	}	
-	
- 
-		/*String stringaSql =  "SELECT customer.last_Name " +
-                               "FROM customer , rental , inventory "+
-				               "WHERE customer.customer_ID=rental.customer_ID AND rental.inventory_ID=inventory.inventory_id AND inventory.film='Titanic'";
-		*/
-		
-   
+
+	/*
+	public static void main (String[] args) throws JSQLParserException{
+		String stringaSql =  "SELECT customer.first_name, payment.amount FROM customer, address, payment WHERE customer.address_id = address.address_id and payment.customer_id = customer.customer_id and payment.amount > 20";
+		ParserSql parser = new ParserSql();
+		parser.spezza(stringaSql);
+		System.out.println(parser.getMatriceWhere().toString());
+
+	}
+	*/
+
 }

@@ -24,26 +24,20 @@ public class GestoreRisultato {
  * @return
  */
 	public static JsonArray unisciColonne(JsonArray risultati, JsonArray risQueryPrec,String foreignKey, String tabellaDaUnire, Map<String, JsonObject> jsonUtili) {
-		System.out.println("RISULTATI QUESTA TABELLA" + risultati.toString());
-		System.out.println("RISULTATI PRECEDENTI" + risQueryPrec.toString());
-		System.out.println("FOREIGN KEY " + foreignKey);
-		System.out.println("TABELLA DA UNIRE " + tabellaDaUnire);
 		JsonArray risultatiUniti = new JsonArray();
 		//String s = foreignKey.split("\\.")[1];
 		String primaryKeyTabellaDaUnire = jsonUtili.get(tabellaDaUnire).get("primarykey").getAsString();
 		for(int i=0; i<risultati.size(); i++){
 			JsonObject rigaRisultatiQuestaTabella = risultati.get(i).getAsJsonObject();
-			System.out.println("RIGA RISULTATI QUESTA TABELLA: "+ rigaRisultatiQuestaTabella);
 			for(int j=0; j<risQueryPrec.size(); j++){
 				JsonObject rigaRisultatiTabellaDaUnire = risQueryPrec.get(j).getAsJsonObject();
-				System.out.println("RIGA RISULTATI TABELLA DA UNIRE: "+ rigaRisultatiTabellaDaUnire);
 				String a = rigaRisultatiQuestaTabella.get(foreignKey).getAsString();
 				a = a.split("\\.")[0];
-				System.out.println("a: "+a);
+				
 				String b = rigaRisultatiTabellaDaUnire.get(primaryKeyTabellaDaUnire).getAsString();
-				System.out.println("b: "+b);
+				
 				b = b.split("\\.")[0]; //quest perchè ho messo le primary key alla ca**o. mettere meglio le pk
-				System.out.println("a.equals(b): "+a.equals(b));
+				
 				if(a.equals(b)){
 					JsonObject rigaUnita = unisci(rigaRisultatiQuestaTabella,rigaRisultatiTabellaDaUnire);
 					risultatiUniti.add(rigaUnita);
@@ -52,7 +46,6 @@ public class GestoreRisultato {
 			
 			}
 		}
-		System.out.println("RISULTATI UNITI: " + risultatiUniti);
 		return risultatiUniti;
 	}
 
@@ -86,7 +79,6 @@ public class GestoreRisultato {
 				if(membro.contains("*")){
 					String tabella = membro.split("\\.")[0];
 					JsonArray colonne = jsonUtili.get(tabella).get("members").getAsJsonArray();
-					System.out.println("COLONNE: "+colonne.toString());
 					for (int j=0; j<colonne.size();j++){
 						rigaProiettata.addProperty(colonne.get(j).getAsString(),rigaRisultato.get(colonne.get(j).getAsString()).getAsString());
 					}
